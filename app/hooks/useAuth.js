@@ -4,23 +4,23 @@ import authStorage from "../api/storage";
 
 import { AuthContext } from "../context/AuthContext";
 
-// import { useDispatch } from "react-redux";
-// import {
-// 	setCurrentUser,
-// 	setCurrentUserAsync,
-// 	unsetCurrentUser,
-// } from "../store/reducers/userReducer";
+import { useDispatch } from "react-redux";
+import {
+	setCurrentUser,
+	setCurrentUserAsync,
+	unsetCurrentUser,
+} from "../store/reducers/userReducer";
 
 const useAuth = () => {
-	const { currentUser, unsetUser, setCurrentUser, setCurrentUserAsync } =
-		React.useContext(AuthContext);
-	// const dispatch = useDispatch();
+	// const { currentUser, unsetUser, setCurrentUser, setCurrentUserAsync } =
+	// 	React.useContext(AuthContext);
+	const dispatch = useDispatch();
 	const createAccount = (authToken) => {
 		const newUser = jwtDecode(authToken);
 		try {
-			setCurrentUser(newUser);
+			// setCurrentUser(newUser);
+			dispatch(setCurrentUser(newUser));
 			authStorage.storeToken(authToken);
-			// dispatch(setCurrentUser(newUser));
 		} catch (error) {
 			console.error(error);
 		}
@@ -29,9 +29,9 @@ const useAuth = () => {
 	const verifyUser = (authToken) => {
 		const user = jwtDecode(authToken);
 		try {
-			// dispatch(setCurrentUser(user));
 			authStorage.storeToken(authToken);
-			setCurrentUser(user);
+			dispatch(setCurrentUser(user));
+			// setCurrentUser(user);
 		} catch (error) {
 			console.error(error);
 		}
@@ -40,9 +40,9 @@ const useAuth = () => {
 	const logUserIn = (authToken) => {
 		const user = jwtDecode(authToken);
 		try {
-			// dispatch(setCurrentUserAsync(user));
+			dispatch(setCurrentUser(user));
 			authStorage.storeToken(authToken);
-			setCurrentUser(user);
+			// setCurrentUser(user);
 		} catch (error) {
 			console.error(error);
 		}
@@ -51,19 +51,19 @@ const useAuth = () => {
 	const saveNewUsername = (authToken) => {
 		const user = jwtDecode(authToken);
 		try {
-			// dispatch(setCurrentUserAsync(user));
 			authStorage.storeToken(authToken);
-			setCurrentUser(user);
+			dispatch(setCurrentUser(user));
+			// setCurrentUser(user);
 		} catch (error) {
 			console.error(error);
 		}
 	};
 
 	const logOut = () => {
-		// dispatch(unsetCurrentUser());
 		authStorage.removeToken();
 		authStorage.removeResetToken();
-		unsetUser();
+		dispatch(unsetCurrentUser());
+		// unsetUser();
 	};
 
 	const reactivateUser = (authResetToken) => {
@@ -75,7 +75,7 @@ const useAuth = () => {
 	};
 
 	return {
-		currentUser,
+		// currentUser,
 		saveNewUsername,
 		createAccount,
 		logOut,

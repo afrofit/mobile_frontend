@@ -16,16 +16,19 @@ import { AuthContext } from "./context/AuthContext";
 
 const Index = () => {
 	const authContext = React.useContext(AuthContext);
-	const { setCurrentUser, currentUser } = authContext;
+	// const { setCurrentUser, currentUser } = authContext;
+	const dispatch = useDispatch();
+
 	const { logOut } = useAuth();
 
-	// const currentUser = useSelector(getCurrentUser);
+	const currentUser = useSelector(getCurrentUser);
 
 	React.useEffect(() => {
 		console.log("User from User Context", currentUser);
 		(async function restoreUser() {
 			const user = await authStorage.getUser();
 			setCurrentUser(user);
+			dispatch(setCurrentUser(user));
 			// logOut();
 		})();
 	}, []);
