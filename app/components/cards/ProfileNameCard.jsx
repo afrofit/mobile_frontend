@@ -19,41 +19,52 @@ const Content = styled.View`
 
 const UsernameText = styled.Text`
 	font-family: "Regular";
-	color: ${COLORS.white};
-	font-size: 18px;
+	color: ${COLORS.yellow};
+	font-size: 16px;
 	text-transform: uppercase;
+	letter-spacing: 1px;
 `;
 
 const EmailText = styled(UsernameText)`
 	font-size: 13px;
 	color: ${COLORS.grayDark};
 	text-transform: lowercase;
+	letter-spacing: 0;
 `;
 
 const JoinDateText = styled(UsernameText)`
 	font-size: 10px;
 	color: ${COLORS.grayDarker};
+	letter-spacing: 0;
 `;
 
 const Marginer = styled.View`
 	flex: 1;
 `;
 
-const ProfileNameCard = ({ onTapUsername }) => {
+const ProfileNameCard = ({
+	email,
+	username,
+	joinDateInMillis,
+	onTapUsername,
+	rankId,
+}) => {
+	const formatDate = () => {
+		return new Date(joinDateInMillis);
+	};
+
 	return (
-		<Card color={COLORS.darker}>
+		<Card color={COLORS.darker} outline={true}>
 			<Container>
-				<RankBadge size="60" />
-				{/* <Spacer h="5px" /> */}
+				<RankBadge size="60" rankCode={rankId} />
 				<Content>
 					<Touchable onPress={onTapUsername}>
-						<UsernameText>Olasupoodebiyi</UsernameText>
+						<UsernameText>{username}</UsernameText>
 					</Touchable>
 					<Spacer h="5px" />
-					<EmailText>olasupoodebiyi@yahoo.com</EmailText>
+					<EmailText>{email}</EmailText>
 					<Spacer h="20px" />
-					{/* <Marginer /> */}
-					<JoinDateText>Joined June 2021</JoinDateText>
+					<JoinDateText>Joined {formatDate().toDateString()}</JoinDateText>
 				</Content>
 			</Container>
 		</Card>

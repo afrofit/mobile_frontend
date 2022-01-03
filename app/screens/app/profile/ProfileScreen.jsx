@@ -17,6 +17,10 @@ import Button from "../../../components/buttons/Button";
 import useAuth from "../../../hooks/useAuth";
 import { BORDER_RADIUS_MID } from "../../../theme/globals";
 import SingleInputModal from "../../../components/modals/SingleInputModal";
+import { getCurrentUser } from "../../../store/reducers/userReducer";
+import { useSelector } from "react-redux";
+import { getTotalUserActivity } from "../../../store/reducers/activityReducer";
+import { formatStatsNumbers } from "../../../utilities/formatters";
 
 const Scroller = styled.ScrollView`
 	max-height: 100%;
@@ -24,7 +28,26 @@ const Scroller = styled.ScrollView`
 	border-radius: ${BORDER_RADIUS_MID};
 `;
 
+const UserIdText = styled.Text`
+	font-size: 10px;
+	color: ${COLORS.grayDarker};
+	letter-spacing: 0;
+	font-family: "Regular";
+	text-transform: uppercase;
+`;
+
 const ProfileScreen = ({}) => {
+	const currentUser = useSelector(getCurrentUser);
+	const totalUserStats = useSelector(getTotalUserActivity);
+
+	const { id: userId, username, email, joinDate, rankId } = currentUser;
+	const {
+		totalCaloriesBurned,
+		totalBodyMovements,
+		totalHoursDanced,
+		totalDaysActive,
+	} = totalUserStats;
+
 	const { logOut } = useAuth();
 
 	const [editingUsername, setEditingUsername] = React.useState(false);
@@ -44,12 +67,25 @@ const ProfileScreen = ({}) => {
 						showsVerticalScrollIndicator={false}
 						contentContainerStyle={styles.contentContainer}
 					>
-						<ProfileNameCard onTapUsername={() => setEditingUsername(true)} />
-						<ProfileStatsCard />
+						<ProfileNameCard
+							username={username}
+							email={email}
+							joinDateInMillis={joinDate}
+							onTapUsername={() => setEditingUsername(true)}
+							rankId={rankId}
+						/>
+						<ProfileStatsCard
+							calBurned={formatStatsNumbers(totalCaloriesBurned)}
+							bodyMoves={formatStatsNumbers(totalBodyMovements)}
+							hoursDanced={formatStatsNumbers(totalHoursDanced)}
+							daysActive={formatStatsNumbers(totalDaysActive)}
+						/>
 						<ProfileSubscriptionCard />
 						{/* <Spacer /> */}
 						<Button text="Logout" variant="red" onPress={() => logOut()} />
 					</Scroller>
+					<Spacer h="10px" />
+					<UserIdText>USER ID: {userId}</UserIdText>
 				</ContentContainer>
 			</ScreenContainer>
 		</>

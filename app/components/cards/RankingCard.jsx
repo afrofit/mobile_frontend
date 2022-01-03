@@ -5,32 +5,33 @@ import { BORDER_RADIUS_MID, BORDER_RADIUS_SMALL } from "../../theme/globals";
 
 const CardContainer = styled.View`
 	width: 100%;
-	background-color: ${(props) =>
-		props.currentUser ? COLORS.red : COLORS.dark};
+
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
 	padding: 12px;
 	border-radius: ${BORDER_RADIUS_SMALL};
+	border-width: 1px;
+	border-color: ${(props) => (props.currentUser ? COLORS.yellow : COLORS.dark)};
 `;
 
 const NameFont = styled.Text`
-	font-family: "SemiBold";
+	font-family: "Regular";
 	font-size: 16px;
 	letter-spacing: 0.1px;
-	color: ${(props) => (props.currentUser ? COLORS.black : COLORS.white)};
+	color: ${(props) => (props.currentUser ? COLORS.yellow : COLORS.white)};
 `;
 const NumberFont = styled(NameFont)`
 	font-family: "NumberBold";
 	font-size: 15px;
 	letter-spacing: 3px;
-	color: ${(props) => (props.currentUser ? COLORS.black : COLORS.grayDarker)};
+	color: ${(props) => (props.currentUser ? COLORS.yellow : COLORS.grayDarker)};
 `;
 const RankNumberFont = styled(NameFont)`
 	font-family: "Bold";
-	font-size: 12px;
+	font-size: 14px;
 	letter-spacing: 3px;
-	color: ${COLORS.black};
+	color: ${(props) => (props.fontColor < 4 ? COLORS.black : COLORS.grayDark)};
 	margin-left: 3px;
 `;
 
@@ -39,7 +40,7 @@ const RankNumberBackground = styled.View`
 	height: 20px;
 	justify-content: center;
 	align-items: center;
-	background-color: ${COLORS.yellow};
+	background-color: ${(props) => props.color};
 	border-radius: ${BORDER_RADIUS_MID};
 	margin-right: 20px;
 `;
@@ -54,11 +55,23 @@ const RankingCard = ({
 	rankPosition = 4,
 	userXP = 567,
 }) => {
+	const rankingNumberColor = () => {
+		return rankPosition == 1
+			? COLORS.yellow
+			: rankPosition == 2
+			? COLORS.grayDark
+			: rankPosition == 3
+			? COLORS.bronze
+			: COLORS.dark;
+	};
+
 	return (
 		<CardContainer currentUser={currentUser}>
 			<IdentifierGrouping>
-				<RankNumberBackground>
-					<RankNumberFont>{rankPosition}</RankNumberFont>
+				<RankNumberBackground color={rankingNumberColor()}>
+					<RankNumberFont fontColor={rankPosition}>
+						{rankPosition}
+					</RankNumberFont>
 				</RankNumberBackground>
 				<NameFont currentUser={currentUser}>{username}</NameFont>
 			</IdentifierGrouping>

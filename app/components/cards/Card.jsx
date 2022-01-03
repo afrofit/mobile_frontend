@@ -12,8 +12,29 @@ const Background = styled.View`
 	margin-bottom: ${MARGIN_VERTICAL};
 `;
 
-const Card = ({ children, color = COLORS.darker }) => {
-	return <Background color={color}>{children}</Background>;
+const OutlineBackground = styled.View`
+	width: 95%;
+	min-height: 30px;
+	padding: 20px;
+	border-radius: ${BORDER_RADIUS_MID};
+	margin-bottom: ${MARGIN_VERTICAL};
+	border-width: 1px;
+	border-color: ${COLORS.grayDarker};
+`;
+
+const Card = ({ children, color = COLORS.darker, outline = false }) => {
+	if (outline) {
+		return (
+			<OutlineBackground outline={outline} color={color}>
+				{children}
+			</OutlineBackground>
+		);
+	} else
+		return (
+			<Background outline={outline} color={color}>
+				{children}
+			</Background>
+		);
 };
 
 export default Card;

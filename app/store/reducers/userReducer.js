@@ -2,11 +2,9 @@ import jwtDecode from "jwt-decode";
 import authStorage from "../../api/storage";
 
 // CONSTANTS
-const LOGGED_USER_IN = "user/LogUserIn";
 const SET_CURRENT_USER = "user/setCurrentUser";
 const SET_CURRENT_USER_ASYNC = "user/setCurrentUserAsync";
 const UNSET_CURRENT_USER = "user/setCurrentUser";
-const RESTORE_USER = "user/restoreUser";
 
 const initialState = {
 	currentUser: null,

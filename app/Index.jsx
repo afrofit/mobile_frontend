@@ -15,7 +15,7 @@ import authStorage from "./api/storage";
 import { AuthContext } from "./context/AuthContext";
 
 const Index = () => {
-	const authContext = React.useContext(AuthContext);
+	// const authContext = React.useContext(AuthContext);
 	// const { setCurrentUser, currentUser } = authContext;
 	const dispatch = useDispatch();
 
@@ -24,7 +24,7 @@ const Index = () => {
 	const currentUser = useSelector(getCurrentUser);
 
 	React.useEffect(() => {
-		console.log("User from User Context", currentUser);
+		console.log("User from Redux Store", currentUser);
 		(async function restoreUser() {
 			const user = await authStorage.getUser();
 			setCurrentUser(user);

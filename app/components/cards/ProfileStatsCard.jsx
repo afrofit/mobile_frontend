@@ -16,28 +16,25 @@ const LabelText = styled.Text`
 
 const NumberText = styled.Text`
 	font-family: "NumberThin";
-	font-size: 55px;
+	font-size: 40px;
 	letter-spacing: 3px;
 	color: ${COLORS.white};
 	margin-right: 5px;
+	text-align: left;
 `;
 
-const Stats = styled.View`
-	width: 140px;
+const StatsBox = styled.View`
+	width: 48%;
 	flex-direction: row;
 	align-items: center;
+	justify-content: center;
 `;
 
-const StatsContainer = styled.View`
+const StatsLine = styled.View`
+	flex-direction: row;
 	width: 100%;
-	flex-direction: row;
-	align-items: center;
 	justify-content: space-between;
 `;
-
-const StatContainer = ({ children }) => {
-	return <Stats>{children}</Stats>;
-};
 
 const ProfileStatsCard = ({
 	calBurned = 200,
@@ -51,27 +48,27 @@ const ProfileStatsCard = ({
 				Your Statistics
 			</Font>
 			<Spacer />
-			<StatsContainer>
-				<StatContainer>
+			<StatsLine>
+				<StatsBox>
 					<NumberText>{calBurned}</NumberText>
 					<LabelText>Calories Burned</LabelText>
-				</StatContainer>
-				<StatContainer>
+				</StatsBox>
+				<StatsBox>
 					<NumberText>{bodyMoves}</NumberText>
 					<LabelText>Body Moves</LabelText>
-				</StatContainer>
-			</StatsContainer>
+				</StatsBox>
+			</StatsLine>
 			<Spacer />
-			<StatsContainer>
-				<StatContainer>
+			<StatsLine>
+				<StatsBox>
 					<NumberText>{hoursDanced}</NumberText>
 					<LabelText>Hours Danced</LabelText>
-				</StatContainer>
-				<StatContainer>
+				</StatsBox>
+				<StatsBox>
 					<NumberText>{daysActive}</NumberText>
 					<LabelText>Days Active</LabelText>
-				</StatContainer>
-			</StatsContainer>
+				</StatsBox>
+			</StatsLine>
 		</Card>
 	);
 };

@@ -23,9 +23,7 @@ const Container = styled.View`
 	/* background-color: red; */
 `;
 
-const PageHeaderSmall = ({
-	title = `WELCOME ${"   "}//${"   "} OlasupoODebiyi`,
-}) => {
+const PageHeaderSmall = ({ title }) => {
 	return (
 		<Container>
 			<TitleText>{title}</TitleText>
