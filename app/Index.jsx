@@ -13,6 +13,7 @@ import VerifyEmailNavigator from "./navigator/VerifyCodeNavigator";
 import { useSelector } from "react-redux";
 import authStorage from "./api/storage";
 import { AuthContext } from "./context/AuthContext";
+import { getSubscription } from "./store/reducers/subscriptionReducer";
 
 const Index = () => {
 	// const authContext = React.useContext(AuthContext);
@@ -22,6 +23,7 @@ const Index = () => {
 	const { logOut } = useAuth();
 
 	const currentUser = useSelector(getCurrentUser);
+	const subscription = useSelector(getSubscription);
 
 	React.useEffect(() => {
 		console.log("User from Redux Store", currentUser);

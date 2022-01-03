@@ -21,6 +21,7 @@ import { getCurrentUser } from "../../../store/reducers/userReducer";
 import { useSelector } from "react-redux";
 import { getTotalUserActivity } from "../../../store/reducers/activityReducer";
 import { formatStatsNumbers } from "../../../utilities/formatters";
+import { getSubscription } from "../../../store/reducers/subscriptionReducer";
 
 const Scroller = styled.ScrollView`
 	max-height: 100%;
@@ -39,6 +40,7 @@ const UserIdText = styled.Text`
 const ProfileScreen = ({}) => {
 	const currentUser = useSelector(getCurrentUser);
 	const totalUserStats = useSelector(getTotalUserActivity);
+	const subscription = useSelector(getSubscription);
 
 	const { id: userId, username, email, joinDate, rankId } = currentUser;
 	const {
@@ -51,7 +53,7 @@ const ProfileScreen = ({}) => {
 	const { logOut } = useAuth();
 
 	const [editingUsername, setEditingUsername] = React.useState(false);
-
+	console.log("Subscription type", subscription);
 	return (
 		<>
 			{editingUsername && (
@@ -80,7 +82,7 @@ const ProfileScreen = ({}) => {
 							hoursDanced={formatStatsNumbers(totalHoursDanced)}
 							daysActive={formatStatsNumbers(totalDaysActive)}
 						/>
-						<ProfileSubscriptionCard />
+						<ProfileSubscriptionCard subscription={subscription} />
 						{/* <Spacer /> */}
 						<Button text="Logout" variant="red" onPress={() => logOut()} />
 					</Scroller>
