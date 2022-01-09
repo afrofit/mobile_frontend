@@ -85,6 +85,7 @@ const Index = () => {
 				dispatch(setCurrentUser(user));
 				currentSub = await getCurrentUserSubscription();
 				console.log("Today", TODAY, "Current Sub End Date", currentSub.endDate);
+				// console.log("From index, this is current sub: ", currentSub);
 				if (!currentSub) {
 					return dispatch(resetSubscription());
 				} else if (currentSub && new Date(currentSub.endDate) < TODAY) {
@@ -93,7 +94,9 @@ const Index = () => {
 					console.log("From index, this is expired currentSub", response);
 					return updateSubscribedUser(response);
 				} else {
-					return dispatch(setSubscription(currentSub));
+					return dispatch(
+						setSubscription({ ...currentSub, startDate: currentSub.createdAt })
+					);
 				}
 			}
 			console.log("From index, this is current sub: ", currentSub);

@@ -31,13 +31,7 @@ export function subscriptionReducer(state = intialState, action) {
 			},
 		};
 	} else if (action.type === SET_SUBSCRIPTION) {
-		const {
-			createdAt: startDate,
-			name,
-			id,
-			isExpired,
-			endDate,
-		} = action.payload;
+		const { startDate, name, id, isExpired, endDate } = action.payload;
 		console.log("From Set Subscription Reducer", action.payload);
 		return {
 			...state,

@@ -42,26 +42,8 @@ const ProfileSubscriptionCard = ({
 	const { endDate, isExpired, name, startDate, id } = subscription;
 
 	//Create Subscription API flow here
-	const { createSubscription, resetCurrentSubscription, updateSubscribedUser } =
-		useSubscription();
-	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
+	const { resetCurrentSubscription, updateSubscribedUser } = useSubscription();
 	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
-
-	const handleCreateSubscription = async () => {
-		// //Hardcode the subscription type here
-		// const result = await createSubscriptionApi.request("yearly");
-		// if (!result.ok) {
-		// 	if (result.data) {
-		// 		setError(result.data);
-		// 	} else {
-		// 		setError("An unexpected error occurred.");
-		// 	}
-		// 	return;
-		// }
-		// // console.log("Subscription from Profile Sub Card", result.data);
-		// updateSubscribedUser(result.data.token);
-		// return createSubscription(result.data.response);
-	};
 
 	const handleCancelSubscription = async () => {
 		const result = await cancelSubscriptionApi.request(id);
@@ -75,6 +57,7 @@ const ProfileSubscriptionCard = ({
 			return;
 		}
 		console.log("Subscription cancelled? ", result.data);
+		updateSubscribedUser(result.data.token);
 		return resetCurrentSubscription();
 	};
 

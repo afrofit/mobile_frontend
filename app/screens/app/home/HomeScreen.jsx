@@ -40,9 +40,7 @@ const HomeScreen = ({ navigation }) => {
 
 	const [error, setError] = React.useState();
 
-	const [showTrialModal, setShowTrialModal] = React.useState(
-		!isTrial && !isPremium && hasTrial
-	);
+	const [showTrialModal, setShowTrialModal] = React.useState(false);
 
 	/*
 	 *Create Subscription API flow here
@@ -52,7 +50,10 @@ const HomeScreen = ({ navigation }) => {
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
-		React.useState(!hasTrial && !isTrial && !isPremium);
+		React.useState(false);
+
+	// const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
+	// React.useState(!hasTrial && !isTrial && !isPremium);
 
 	const [showConfirmModal, setShowConfirmModal] = React.useState({
 		show: false,
@@ -63,14 +64,25 @@ const HomeScreen = ({ navigation }) => {
 	});
 
 	/*
-	 *  Navigation logic
+	 * General functions
+	 */
+	const checkSubscriptionStatus = (story) => {
+		// Check for subscription
+		if (!hasTrial && !isTrial && !isPremium)
+			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
+		else if (!isTrial && !isPremium && hasTrial) return setShowTrialModal(true);
+		return triggerNavigate(story);
+	};
+
+	/*
+	 * Navigation logic
 	 */
 
 	const triggerNavigate = (story) => {
-		// navigation.navigate(routes.home.STORY_INTRO, { data: story });
-		navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
-			data: { success: true },
-		});
+		navigation.navigate(routes.home.STORY_INTRO, { data: story });
+		// navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
+		// 	data: { success: true },
+		// });
 	};
 
 	/*
@@ -128,7 +140,7 @@ const HomeScreen = ({ navigation }) => {
 		createSubscription(result.data.response);
 
 		setShowConfirmModal(!showConfirmModal);
-		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
+		return setShowChooseSubscriptionModal(false);
 	};
 
 	return (
@@ -168,7 +180,7 @@ const HomeScreen = ({ navigation }) => {
 						calBurned={formatStatsNumbers(caloriesBurned)}
 						bodyMoves={formatStatsNumbers(bodyMovements)}
 					/>
-					<StoryListSection triggerNavigate={triggerNavigate} />
+					<StoryListSection triggerNavigate={checkSubscriptionStatus} />
 				</ContentContainer>
 			</ScreenContainer>
 		</>
