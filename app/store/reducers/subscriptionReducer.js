@@ -1,73 +1,50 @@
-import {
-	calculateSubscriptionDuration,
-	TODAY,
-} from "../../utilities/calculators";
+import subscriptionApi from "../../api/subscription/subscriptionApi";
+import useApi from "../../hooks/useApi";
 
-// export enum SubscriptionName {
-// 	TRIAL = "Trial",
-// 	MONTH = "Monthly",
-// 	HALF_YEAR = "Half-Yearly",
-// 	YEAR = "Yearly",
-// 	UNSUBSCRIBED = "Unsubscribed",
-// }
+// import { getCurrentSubscription } from "../../api/subscription";
 
-// export enum SubscriptionDuration {
-// 	TRIAL = 7,
-// 	MONTH = 35,
-// 	HALF_YEAR = 185,
-// 	YEAR = 365,
-// }
-
-export const subscriptionTypes = Object.freeze({
-	TRIAL: { name: "trial", durationInDays: 7 },
-	MONTH: { name: "monthly", durationInDays: 35 },
-	HALF_YEAR: { name: "half-yearly", durationInDays: 185 },
-	YEARLY: { name: "yearly", durationInDays: 365 },
-	UNSUBSCRIBED: { name: "unsubscribed", durationInDays: 0 },
-});
+export const UNSUBSCRIBED = "unsubscribed";
 
 const intialState = {
 	subscription: {
-		name: "",
-		durationInDays: 0,
-		startDate: "",
-		endDate: "",
 		amountInGBP: 0,
+		endDate: "",
+		id: "",
 		isExpired: true,
+		name: UNSUBSCRIBED,
+		startDate: "",
 	},
 };
 
-const START_SUBSCRIPTION = "subscription/startSubscription";
-const CANCEL_SUBSCRIPTION = "subscription/cancelSubscription;";
+const SET_SUBSCRIPTION = "subscription/setSubscription";
+const RESET_SUBSCRIPTION = "subscription/resetSubscription;";
 
 export function subscriptionReducer(state = intialState, action) {
-	if (action.type === CANCEL_SUBSCRIPTION) {
+	if (action.type === RESET_SUBSCRIPTION) {
 		return {
 			...state,
 			subscription: {
-				startDate: null,
-				endDate: null,
 				amountInGBP: 0,
-				durationInDays: 0,
-				name: subscriptionTypes.UNSUBSCRIBED.name,
+				endDate: "",
+				id: "",
 				isExpired: true,
+				name: UNSUBSCRIBED,
+				startDate: "",
 			},
 		};
-	} else if (action.type === START_SUBSCRIPTION) {
-		console.log("Action,", action);
-		const endDate = calculateSubscriptionDuration(
-			action.payload.createdAt,
-			action.payload.durationInDays
-		);
+	} else if (action.type === SET_SUBSCRIPTION) {
+		const { createdAt, name, id, isExpired, endDate, amountInGBP } =
+			action.payload;
+
 		return {
 			...state,
 			subscription: {
-				startDate: action.payload.createdAt,
+				amountInGBP,
 				endDate,
-				name: action.payload.name,
-				durationInDays: action.payload.durationInDays,
-				isExpired: action.payload.isExpired,
-				amountInGBP: action.payload.amountInGBP,
+				id,
+				isExpired,
+				name,
+				startDate: createdAt,
 			},
 		};
 	}
@@ -75,15 +52,43 @@ export function subscriptionReducer(state = intialState, action) {
 }
 
 //Action Creators
-export const startSubscription = (subscription) => ({
-	type: START_SUBSCRIPTION,
+export const setSubscription = (subscription) => ({
+	type: SET_SUBSCRIPTION,
 	payload: subscription,
 });
 
-export const endSubscription = () => ({
-	type: CANCEL_SUBSCRIPTION,
+export const resetSubscription = () => ({
+	type: RESET_SUBSCRIPTION,
 	payload: null,
 });
+
+export function requestSubscription() {
+	return (dispatch) => {
+		const getSubscriptionApi = useApi(subscriptionApi.getCurrentSubscription);
+		// const result = getSubscriptionApi.request();
+		// const result = getSubscriptionApi;
+		getSubscriptionApi.request().then(({ data }) => {
+			console.log("Got it!", data);
+			return dispatch(setSubscription(data));
+		});
+		// const getCurrentUserSubscription = async () => {
+
+		// 	if (!result.ok) {
+		// 		if (result.data) {
+		// 			console.error("Error getting subscription info", result.data);
+		// 		} else {
+		// 			console.error("Error getting subscription", result.data);
+		// 		}
+		// 		return;
+		// 	}
+		// 	console.log("From subs-reducer thunk", result.data);
+		// 	return result.data;
+		// };
+		// getCurrentUserSubscription.then((currSub) =>
+		// 	dispatch(setSubscription(currSub))
+		// );
+	};
+}
 
 //Selectors
 export const getSubscription = (state) => state.subscription.subscription;

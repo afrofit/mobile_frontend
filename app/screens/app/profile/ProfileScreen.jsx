@@ -42,7 +42,23 @@ const ProfileScreen = ({}) => {
 	const totalUserStats = useSelector(getTotalUserActivity);
 	const subscription = useSelector(getSubscription);
 
-	const { id: userId, username, email, joinDate, rankId } = currentUser;
+	React.useEffect(() => {
+		console.log("Subscription from ProfileScreen", subscription);
+		console.log("CurrentUser from ProfileScreen", currentUser);
+		console.log("============  XoX  ===========");
+	}, [subscription, currentUser]);
+
+	const {
+		id: userId,
+		username,
+		email,
+		joinDate,
+		rankId,
+		isTrial,
+		isPremium,
+		isTrialUntil,
+		isPremiumUntil,
+	} = currentUser;
 	const {
 		totalCaloriesBurned,
 		totalBodyMovements,
@@ -53,7 +69,6 @@ const ProfileScreen = ({}) => {
 	const { logOut } = useAuth();
 
 	const [editingUsername, setEditingUsername] = React.useState(false);
-	console.log("Subscription type", subscription);
 	return (
 		<>
 			{editingUsername && (
@@ -82,7 +97,13 @@ const ProfileScreen = ({}) => {
 							hoursDanced={formatStatsNumbers(totalHoursDanced)}
 							daysActive={formatStatsNumbers(totalDaysActive)}
 						/>
-						<ProfileSubscriptionCard subscription={subscription} />
+						<ProfileSubscriptionCard
+							subscription={subscription}
+							isTrial={isTrial}
+							isPremium={isPremium}
+							isTrialUntil={isTrialUntil}
+							isPremiumUntil={isPremiumUntil}
+						/>
 						{/* <Spacer /> */}
 						<Button text="Logout" variant="red" onPress={() => logOut()} />
 					</Scroller>

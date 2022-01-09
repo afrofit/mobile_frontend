@@ -30,20 +30,26 @@ const Container = styled.View`
 	align-items: center;
 `;
 
-const ProfileSubscriptionCard = ({ subscription }) => {
+const ProfileSubscriptionCard = ({
+	subscription,
+	isTrial,
+	isPremium,
+	isPremiumUntil,
+	isTrialUntil,
+}) => {
 	// All useState Stuff setup here
 	const [error, setError] = React.useState();
-
-	const { amountInGBP, durationInDays, endDate, isExpired, name, startDate } =
-		subscription;
+	const { amountInGBP, endDate, isExpired, name, startDate, id } = subscription;
 
 	//Create Subscription API flow here
-	const { createSubscription } = useSubscription();
+	const { createSubscription, resetSubscription, updateSubscribedUser } =
+		useSubscription();
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
+	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
 
 	const handleCreateSubscription = async () => {
 		//Hardcode the subscription type here
-		const result = await createSubscriptionApi.request("trial");
+		const result = await createSubscriptionApi.request("yearly");
 
 		if (!result.ok) {
 			if (result.data) {
@@ -53,9 +59,30 @@ const ProfileSubscriptionCard = ({ subscription }) => {
 			}
 			return;
 		}
-		console.log("Subscription from Profile Sub Card", result.data);
-		return createSubscription(result.data);
+		// console.log("Subscription from Profile Sub Card", result.data);
+		updateSubscribedUser(result.data.token);
+		return createSubscription(result.data.response);
 	};
+
+	const handleCancelSubscription = async () => {
+		console.log("Subscription id", id);
+		const result = await cancelSubscriptionApi.request(id);
+
+		if (!result.ok) {
+			if (result.data) {
+				setError(result.data);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+			return;
+		}
+		console.log("Subscription cancelled? ", result.data);
+		return resetSubscription();
+	};
+
+	const subscribed =
+		(!isTrial && isPremium && !isExpired) ||
+		(isTrial && !isPremium && !isExpired);
 
 	return (
 		<Card color={isExpired ? COLORS.red : COLORS.darker}>
@@ -64,19 +91,23 @@ const ProfileSubscriptionCard = ({ subscription }) => {
 			</Font>
 			<Spacer />
 			<Container>
-				{!isExpired && (
+				{subscribed && (
 					<>
 						<LabelText>Your {name} subscription ends on</LabelText>
 						<Spacer h="10px" />
-						<NumberText>{endDate}</NumberText>
+						<NumberText>{new Date(endDate).toDateString()}</NumberText>
 						<Spacer />
-						<Button text="Cancel Subscription" />
+						<Button
+							text="Cancel Subscription"
+							onPress={handleCancelSubscription}
+						/>
 					</>
 				)}
-				{isExpired && (
+
+				{!subscribed && (
 					<>
 						<LabelText unsubscribed={isExpired}>
-							You're don't have a current subscription.
+							no current subscription
 						</LabelText>
 						<Spacer />
 						<Button text="Subscribe Now" onPress={handleCreateSubscription} />

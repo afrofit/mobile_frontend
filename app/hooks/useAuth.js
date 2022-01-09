@@ -1,24 +1,17 @@
-import * as React from "react";
 import jwtDecode from "jwt-decode";
 import authStorage from "../api/storage";
-
-import { AuthContext } from "../context/AuthContext";
 
 import { useDispatch } from "react-redux";
 import {
 	setCurrentUser,
-	setCurrentUserAsync,
 	unsetCurrentUser,
 } from "../store/reducers/userReducer";
 
 const useAuth = () => {
-	// const { currentUser, unsetUser, setCurrentUser, setCurrentUserAsync } =
-	// 	React.useContext(AuthContext);
 	const dispatch = useDispatch();
 	const createAccount = (authToken) => {
 		const newUser = jwtDecode(authToken);
 		try {
-			// setCurrentUser(newUser);
 			dispatch(setCurrentUser(newUser));
 			authStorage.storeToken(authToken);
 		} catch (error) {
@@ -31,7 +24,6 @@ const useAuth = () => {
 		try {
 			authStorage.storeToken(authToken);
 			dispatch(setCurrentUser(user));
-			// setCurrentUser(user);
 		} catch (error) {
 			console.error(error);
 		}
@@ -42,7 +34,6 @@ const useAuth = () => {
 		try {
 			dispatch(setCurrentUser(user));
 			authStorage.storeToken(authToken);
-			// setCurrentUser(user);
 		} catch (error) {
 			console.error(error);
 		}
@@ -53,7 +44,6 @@ const useAuth = () => {
 		try {
 			authStorage.storeToken(authToken);
 			dispatch(setCurrentUser(user));
-			// setCurrentUser(user);
 		} catch (error) {
 			console.error(error);
 		}
@@ -63,7 +53,6 @@ const useAuth = () => {
 		authStorage.removeToken();
 		authStorage.removeResetToken();
 		dispatch(unsetCurrentUser());
-		// unsetUser();
 	};
 
 	const reactivateUser = (authResetToken) => {
@@ -75,7 +64,6 @@ const useAuth = () => {
 	};
 
 	return {
-		// currentUser,
 		saveNewUsername,
 		createAccount,
 		logOut,

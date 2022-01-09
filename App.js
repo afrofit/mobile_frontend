@@ -1,5 +1,5 @@
 import jwtDecode from "jwt-decode";
-import React from "react";
+import * as React from "react";
 import { LogBox } from "react-native";
 import { Provider, useDispatch } from "react-redux";
 
@@ -7,7 +7,7 @@ import authStorage from "./app/api/storage";
 import AuthContextProvider from "./app/context/AuthContext";
 import useAuth from "./app/hooks/useAuth";
 import Index from "./app/Index";
-import { setCurrentUser } from "./app/store/reducers/userReducer";
+import { requestSubscription } from "./app/store/reducers/subscriptionReducer";
 import { store } from "./app/store/store";
 
 LogBox.ignoreLogs([
@@ -15,19 +15,11 @@ LogBox.ignoreLogs([
 ]);
 
 export default function App() {
-	// React.useEffect(() => {
-	// 	(async function restoreUser() {
-	// 		const user = await authStorage.getUser();
-	// 		console.log("User from App.js", user);
-	// 		store.dispatch(setCurrentUser(user));
-	// 	})();
-	// }, []);
+	// store.dispatch(requestSubscription());
 
 	return (
 		<Provider store={store}>
-			<AuthContextProvider>
-				<Index />
-			</AuthContextProvider>
+			<Index />
 		</Provider>
 	);
 }
