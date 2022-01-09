@@ -34,8 +34,7 @@ const ProfileSubscriptionCard = ({
 	subscription,
 	isTrial,
 	isPremium,
-	isPremiumUntil,
-	isTrialUntil,
+	onTapSubscribe,
 }) => {
 	// All useState Stuff setup here
 	const [error, setError] = React.useState();
@@ -49,29 +48,22 @@ const ProfileSubscriptionCard = ({
 	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
 
 	const handleCreateSubscription = async () => {
-		//Hardcode the subscription type here
-		const result = await createSubscriptionApi.request("yearly");
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		// console.log("Subscription from Profile Sub Card", result.data);
-		updateSubscribedUser(result.data.token);
-		return createSubscription(result.data.response);
+		// //Hardcode the subscription type here
+		// const result = await createSubscriptionApi.request("yearly");
+		// if (!result.ok) {
+		// 	if (result.data) {
+		// 		setError(result.data);
+		// 	} else {
+		// 		setError("An unexpected error occurred.");
+		// 	}
+		// 	return;
+		// }
+		// // console.log("Subscription from Profile Sub Card", result.data);
+		// updateSubscribedUser(result.data.token);
+		// return createSubscription(result.data.response);
 	};
 
-	const handleCancelSubscription = async (subscriptionId) => {
-		console.log(
-			"Subscription id",
-			subscriptionId,
-			"Typeof",
-			typeof subscriptionId
-		);
+	const handleCancelSubscription = async () => {
 		const result = await cancelSubscriptionApi.request(id);
 
 		if (!result.ok) {
@@ -118,7 +110,8 @@ const ProfileSubscriptionCard = ({
 							no current subscription
 						</LabelText>
 						<Spacer />
-						<Button text="Subscribe Now" onPress={handleCreateSubscription} />
+						{/* <Button text="Subscribe Now" onPress={handleCreateSubscription} /> */}
+						<Button text="Subscribe Now" onPress={onTapSubscribe} />
 					</>
 				)}
 			</Container>

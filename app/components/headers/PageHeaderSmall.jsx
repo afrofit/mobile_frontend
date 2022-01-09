@@ -11,6 +11,8 @@ const TitleText = styled.Text`
 	letter-spacing: 3px;
 	text-transform: uppercase;
 	color: ${COLORS.white};
+	text-align: center;
+	line-height: 18px;
 `;
 
 const Container = styled.View`

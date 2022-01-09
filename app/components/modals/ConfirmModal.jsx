@@ -23,8 +23,22 @@ const ModalBG = styled.ImageBackground`
 	background-color: ${COLORS.black};
 `;
 
+const ParagraphText = styled.Text`
+	font-family: "Regular";
+	font-size: 15px;
+	letter-spacing: 0.1px;
+	color: ${COLORS.grayDark};
+	/* width: 40%; */
+	/* text-transform: lowercase; */
+	text-align: center;
+	margin-bottom: 20px;
+`;
+
 const ConfirmModal = ({
-	message = "Are you sure?",
+	title = "Are you sure?",
+	confirmText = "Yes",
+	cancelText = "No",
+	message,
 	onCancelClicked,
 	onConfirmClicked,
 }) => {
@@ -38,14 +52,15 @@ const ConfirmModal = ({
 	return (
 		<BackgroundOverlay>
 			<ModalBG>
-				<PageHeaderSmall title={message} />
+				<PageHeaderSmall title={title} />
+				{message && <ParagraphText>{message}</ParagraphText>}
 				<Button
-					text="Yes, quit"
+					text={confirmText}
 					variant="red"
 					onPress={() => handleConfirm()}
 				/>
 				<Button
-					text="No, continue"
+					text={cancelText}
 					variant="white"
 					onPress={() => handleCancel()}
 				/>

@@ -38,7 +38,7 @@ export function subscriptionReducer(state = intialState, action) {
 			isExpired,
 			endDate,
 		} = action.payload;
-		console.log("From Set Subscription Reducer", startDate);
+		console.log("From Set Subscription Reducer", action.payload);
 		return {
 			...state,
 			subscription: {

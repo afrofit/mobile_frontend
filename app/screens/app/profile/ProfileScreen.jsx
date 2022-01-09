@@ -7,8 +7,6 @@ import ProfileStatsCard from "../../../components/cards/ProfileStatsCard";
 import ProfileSubscriptionCard from "../../../components/cards/ProfileSubscriptionCard";
 import { ContentContainer } from "../../../components/ContentContainer";
 import PageHeaderLarge from "../../../components/headers/PageHeaderLarge";
-import RankBadge from "../../../components/RankBadge";
-import Font from "../../../elements/Font";
 
 import { COLORS } from "../../../theme/colors";
 import ScreenContainer from "../../../utilities/ScreenContainer";
@@ -22,6 +20,10 @@ import { useSelector } from "react-redux";
 import { getTotalUserActivity } from "../../../store/reducers/activityReducer";
 import { formatStatsNumbers } from "../../../utilities/formatters";
 import { getSubscription } from "../../../store/reducers/subscriptionReducer";
+import useSubscription from "../../../hooks/useSubscription";
+import subscriptionApi from "../../../api/subscription/subscriptionApi";
+import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
+import ConfirmModal from "../../../components/modals/ConfirmModal";
 
 const Scroller = styled.ScrollView`
 	max-height: 100%;
@@ -38,6 +40,12 @@ const UserIdText = styled.Text`
 `;
 
 const ProfileScreen = ({}) => {
+	/*
+	 *useState for errors, modals etc
+	 */
+
+	const [error, setError] = React.useState();
+
 	const currentUser = useSelector(getCurrentUser);
 	const totalUserStats = useSelector(getTotalUserActivity);
 	const subscription = useSelector(getSubscription);
@@ -54,6 +62,7 @@ const ProfileScreen = ({}) => {
 		email,
 		joinDate,
 		rankId,
+		hasTrial,
 		isTrial,
 		isPremium,
 		isTrialUntil,
@@ -69,8 +78,107 @@ const ProfileScreen = ({}) => {
 	const { logOut } = useAuth();
 
 	const [editingUsername, setEditingUsername] = React.useState(false);
+
+	/*
+	 *Create Subscription API flow here
+	 */
+
+	const { createSubscription, updateSubscribedUser } = useSubscription();
+	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
+
+	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
+		React.useState(false);
+
+	const [showConfirmModal, setShowConfirmModal] = React.useState({
+		show: false,
+		message: "",
+		confirmText: "Yes, Subscribe Me",
+		cancelText: "Maybe later",
+		value: "",
+	});
+
+	/*
+	 *Create Subscription Flow
+	 */
+
+	const handleCreateSubscription = async (value) => {
+		switch (value) {
+			case "monthly":
+				setShowConfirmModal({
+					...showConfirmModal,
+					show: true,
+					value,
+					message:
+						"This will subscribe you for £2.99 every monthly, paid yearly",
+				});
+				break;
+			case "half-yearly":
+				setShowConfirmModal({
+					...showConfirmModal,
+					show: true,
+					value,
+					message:
+						"This will subscribe you for £7.99 for (6) six months. This saves you £15",
+				});
+				break;
+			case "yearly":
+				setShowConfirmModal({
+					...showConfirmModal,
+					show: true,
+					value,
+					message:
+						"This will subscribe you for £14.99 for twelve (12) months. Saving you £15.",
+				});
+				break;
+			default:
+				return;
+		}
+		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
+	};
+
+	const triggerCreateSubscription = async (value) => {
+		console.log("Value", value);
+		const result = await createSubscriptionApi.request(value);
+
+		if (!result.ok) {
+			if (result.data) {
+				setError(result.data);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+			return;
+		}
+		updateSubscribedUser(result.data.token);
+		createSubscription(result.data.response);
+
+		setShowConfirmModal(!showConfirmModal);
+		return setShowChooseSubscriptionModal(false);
+	};
+
 	return (
 		<>
+			{showConfirmModal.show && (
+				<ConfirmModal
+					onCancelClicked={() => {
+						setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
+						return setShowConfirmModal(!showConfirmModal);
+					}}
+					onConfirmClicked={() =>
+						triggerCreateSubscription(showConfirmModal.value)
+					}
+					confirmText="Yes, Susbcribe me"
+					cancelText="Maybe Later"
+					message={showConfirmModal.message}
+				/>
+			)}
+			{showChooseSubscriptionModal && (
+				<ChooseSubscriptionTypeModal
+					onCancelClicked={() =>
+						setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
+					}
+					handleCreateSubscription={handleCreateSubscription}
+				/>
+			)}
 			{editingUsername && (
 				<SingleInputModal
 					onCancelChange={() => setEditingUsername(false)}
@@ -101,8 +209,9 @@ const ProfileScreen = ({}) => {
 							subscription={subscription}
 							isTrial={isTrial}
 							isPremium={isPremium}
-							isTrialUntil={isTrialUntil}
-							isPremiumUntil={isPremiumUntil}
+							onTapSubscribe={() =>
+								setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
+							}
 						/>
 						{/* <Spacer /> */}
 						<Button text="Logout" variant="red" onPress={() => logOut()} />
