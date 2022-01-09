@@ -22,12 +22,12 @@ const HomeScreen = ({ navigation }) => {
 	const todaysActivity = useSelector(getTodaysActivity);
 
 	// Fetch relevant data from selectors
-	const { username, isTrial, isPremium } = currentUser;
+	const { username, isTrial, isPremium, hasTrial } = currentUser;
 	const { caloriesBurned, bodyMovements } = todaysActivity;
 
 	//useState for modals etc
 	const [showTrialModal, setShowTrialModal] = React.useState(
-		!isTrial && !isPremium
+		!isTrial && !isPremium && hasTrial
 	);
 
 	// Navigation logic

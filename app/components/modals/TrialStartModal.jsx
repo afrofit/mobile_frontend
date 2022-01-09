@@ -50,7 +50,7 @@ const TrialStartModal = ({ onCancelClicked }) => {
 	// All useState Stuff setup here
 	const [error, setError] = React.useState();
 	//Create Subscription API flow here
-	const { createSubscription } = useSubscription();
+	const { createSubscription, updateSubscribedUser } = useSubscription();
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
 
 	const handleStartTrial = async () => {
@@ -65,9 +65,8 @@ const TrialStartModal = ({ onCancelClicked }) => {
 			}
 			return;
 		}
-
-		const { response, token } = result.data;
-		createSubscription(response, token);
+		updateSubscribedUser(result.data.token);
+		createSubscription(result.data.response);
 		return onCancelClicked();
 	};
 

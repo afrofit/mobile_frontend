@@ -39,10 +39,11 @@ const ProfileSubscriptionCard = ({
 }) => {
 	// All useState Stuff setup here
 	const [error, setError] = React.useState();
-	const { amountInGBP, endDate, isExpired, name, startDate, id } = subscription;
+	console.log("Subscription from ProfileSubCard: ", subscription);
+	const { endDate, isExpired, name, startDate, id } = subscription;
 
 	//Create Subscription API flow here
-	const { createSubscription, resetSubscription, updateSubscribedUser } =
+	const { createSubscription, resetCurrentSubscription, updateSubscribedUser } =
 		useSubscription();
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
 	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
@@ -64,8 +65,13 @@ const ProfileSubscriptionCard = ({
 		return createSubscription(result.data.response);
 	};
 
-	const handleCancelSubscription = async () => {
-		console.log("Subscription id", id);
+	const handleCancelSubscription = async (subscriptionId) => {
+		console.log(
+			"Subscription id",
+			subscriptionId,
+			"Typeof",
+			typeof subscriptionId
+		);
 		const result = await cancelSubscriptionApi.request(id);
 
 		if (!result.ok) {
@@ -77,12 +83,14 @@ const ProfileSubscriptionCard = ({
 			return;
 		}
 		console.log("Subscription cancelled? ", result.data);
-		return resetSubscription();
+		return resetCurrentSubscription();
 	};
 
 	const subscribed =
 		(!isTrial && isPremium && !isExpired) ||
 		(isTrial && !isPremium && !isExpired);
+
+	const expired = (isExpired && !id) || (isExpired && name === "unsubscribed");
 
 	return (
 		<Card color={isExpired ? COLORS.red : COLORS.darker}>
@@ -99,12 +107,12 @@ const ProfileSubscriptionCard = ({
 						<Spacer />
 						<Button
 							text="Cancel Subscription"
-							onPress={handleCancelSubscription}
+							onPress={() => handleCancelSubscription(id)}
 						/>
 					</>
 				)}
 
-				{!subscribed && (
+				{expired && (
 					<>
 						<LabelText unsubscribed={isExpired}>
 							no current subscription

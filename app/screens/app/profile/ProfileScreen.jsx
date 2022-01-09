@@ -45,7 +45,7 @@ const ProfileScreen = ({}) => {
 	React.useEffect(() => {
 		console.log("Subscription from ProfileScreen", subscription);
 		console.log("CurrentUser from ProfileScreen", currentUser);
-		console.log("============  XoX  ===========");
+		console.log("============  XoXoX  ===========");
 	}, [subscription, currentUser]);
 
 	const {

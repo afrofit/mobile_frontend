@@ -7,7 +7,6 @@ export const UNSUBSCRIBED = "unsubscribed";
 
 const intialState = {
 	subscription: {
-		amountInGBP: 0,
 		endDate: "",
 		id: "",
 		isExpired: true,
@@ -24,7 +23,6 @@ export function subscriptionReducer(state = intialState, action) {
 		return {
 			...state,
 			subscription: {
-				amountInGBP: 0,
 				endDate: "",
 				id: "",
 				isExpired: true,
@@ -33,18 +31,22 @@ export function subscriptionReducer(state = intialState, action) {
 			},
 		};
 	} else if (action.type === SET_SUBSCRIPTION) {
-		const { createdAt, name, id, isExpired, endDate, amountInGBP } =
-			action.payload;
-
+		const {
+			createdAt: startDate,
+			name,
+			id,
+			isExpired,
+			endDate,
+		} = action.payload;
+		console.log("From Set Subscription Reducer", startDate);
 		return {
 			...state,
 			subscription: {
-				amountInGBP,
 				endDate,
 				id,
 				isExpired,
 				name,
-				startDate: createdAt,
+				startDate,
 			},
 		};
 	}
@@ -65,28 +67,10 @@ export const resetSubscription = () => ({
 export function requestSubscription() {
 	return (dispatch) => {
 		const getSubscriptionApi = useApi(subscriptionApi.getCurrentSubscription);
-		// const result = getSubscriptionApi.request();
-		// const result = getSubscriptionApi;
 		getSubscriptionApi.request().then(({ data }) => {
 			console.log("Got it!", data);
 			return dispatch(setSubscription(data));
 		});
-		// const getCurrentUserSubscription = async () => {
-
-		// 	if (!result.ok) {
-		// 		if (result.data) {
-		// 			console.error("Error getting subscription info", result.data);
-		// 		} else {
-		// 			console.error("Error getting subscription", result.data);
-		// 		}
-		// 		return;
-		// 	}
-		// 	console.log("From subs-reducer thunk", result.data);
-		// 	return result.data;
-		// };
-		// getCurrentUserSubscription.then((currSub) =>
-		// 	dispatch(setSubscription(currSub))
-		// );
 	};
 }
 
