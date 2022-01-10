@@ -2,17 +2,15 @@ import * as React from "react";
 import styled from "styled-components/native";
 import { Video } from "expo-av";
 import { StyleSheet } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 
 import Button from "../../../components/buttons/Button";
-import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
+import PageHeaderHuge from "../../../components/headers/PageHeaderHuge";
 import ThreeStarsElement from "../../../elements/ThreeStarsElement";
 import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
-import { DEVICE_WIDTH, DEVICE_HEIGHT } from "../../../theme/globals";
-import useDisableHardwareBack from "../../../hooks/useDisableHardwareBack";
+import VideoContainer from "../../../utilities/VideoContainer";
 import useVideo from "../../../hooks/useVideo";
 
 //This screen is where video intro of storyline is played. Very important!
@@ -20,14 +18,6 @@ const Container = styled.View`
 	height: 100%;
 	width: 100%;
 	align-items: center;
-`;
-
-const VideoContainer = styled.View`
-	align-items: center;
-	height: ${DEVICE_HEIGHT};
-	width: ${DEVICE_WIDTH};
-	position: absolute;
-	z-index: -2;
 `;
 
 const PageSection = styled.View`
@@ -56,6 +46,13 @@ const Font = styled.Text`
 	text-align: center;
 `;
 
+const MessageText = styled(Font)`
+	font-family: "SemiBold";
+	font-size: 17px;
+	letter-spacing: 1.5px;
+	color: ${COLORS.white};
+`;
+
 const InstructionText = styled(Font)`
 	font-family: "Regular";
 	font-size: 13px;
@@ -67,63 +64,47 @@ const InstructionTextWhite = styled(InstructionText)`
 	width: 300px;
 `;
 
-const StoryIntroScreen = ({ navigation, route }) => {
-	const {} = route.params;
+const FinishStoryScreen = ({ navigation, route }) => {
+	// const { success } = route.params.data;
 	const [videoStatus, setVideoStatus] = React.useState();
 
-	/*
-	 * Set up VideoRef
-	 */
+	const message =
+		"You did it! I am the world champion. I can't believe this! You are amazing!";
+
 	const videoRef = React.useRef(null);
+
 	const { handleUnloadVideo } = useVideo(videoRef, videoStatus);
 
-	// Disable Back Button
-	const { backDisabled } = useDisableHardwareBack();
-	useFocusEffect(backDisabled());
-
-	/*
-	 *Video monitoring functions
-	 */
-
 	const _onPlaybackStatusUpdate = async (status) => {
-		if (status.didJustFinish) {
-			// do something specific
-			// console.log("___FINISHED!____");
-		}
+		// if (status.didJustFinish) return handleUserResults("success");
+
 		setVideoStatus(status);
 		// console.log(videoStatus);
 	};
 
-	const handleStartStory = () => {
-		handleUnloadVideo().then(() => navigation.navigate(routes.home.STORY));
+	const handleFinishStory = () => {
+		handleUnloadVideo().then(() => navigation.navigate(routes.ROOT));
 	};
 
 	return (
 		<ScreenContainer backgroundColor={COLORS.dark}>
 			<Container>
-				<PageHeaderSmall title="AJ's Big FIGHT // CHAPTER 1" />
+				<Spacer />
+				<PageHeaderHuge title="Completed" />
 				<TopSection />
 				<MidSection>
 					<ThreeStarsElement />
 					<Spacer />
-					<InstructionTextWhite>
-						As his trainer, you must help AJ defeat 15 opponents to become world
-						champion!
-					</InstructionTextWhite>
+					<InstructionTextWhite>{message}</InstructionTextWhite>
 					<Spacer />
 					<ThreeStarsElement />
 				</MidSection>
 				<Button
 					variant="white"
-					text="Start Story"
-					onPress={handleStartStory}
-					disabled={videoStatus && videoStatus.positionMillis <= 5000}
+					text={"Finish Story"}
+					onPress={handleFinishStory}
 				/>
-				<Button
-					variant="red"
-					text="Exit Story"
-					onPress={() => navigation.goBack()}
-				/>
+
 				<Spacer />
 				<VideoContainer>
 					<Video
@@ -150,4 +131,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default StoryIntroScreen;
+export default FinishStoryScreen;

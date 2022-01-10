@@ -1,7 +1,10 @@
 import * as React from "react";
 import styled from "styled-components/native";
+import { Video } from "expo-av";
+import { StyleSheet } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+
 import QuitButton from "../../../components/buttons/QuitButton";
-import { ContentContainer } from "../../../components/ContentContainer";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import OneStarElement from "../../../elements/OneStarElement";
@@ -10,11 +13,19 @@ import { BORDER_RADIUS_BIG } from "../../../theme/globals";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
+import useDisableHardwareBack from "../../../hooks/useDisableHardwareBack";
+import useVideo from "../../../hooks/useVideo";
+import VideoContainer from "../../../utilities/VideoContainer";
+import useBodyMovements from "../../../hooks/useBodyMovements";
 
 const Container = styled.View`
 	height: 100%;
 	width: 100%;
 	align-items: center;
+`;
+
+const FlexSpacer = styled.View`
+	flex: 1;
 `;
 
 const Font = styled.Text`
@@ -63,10 +74,6 @@ const StatusContainer = styled.View`
 	border-radius: ${BORDER_RADIUS_BIG};
 `;
 
-const VideoContainer = styled.View`
-	flex: 1;
-`;
-
 const BottomSection = styled.View`
 	justify-content: center;
 	align-items: center;
@@ -74,23 +81,117 @@ const BottomSection = styled.View`
 
 const DanceScreen = ({ navigation }) => {
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
+	const [videoStatus, setVideoStatus] = React.useState();
+
+	const videoRef = React.useRef(null);
+
+	const { handleUnloadVideo, handlePlayVideoPlayback } = useVideo(
+		videoRef,
+		videoStatus
+	);
+
+	const { bodyMovementCount, setBodyMovementCount, startMoving, stopMoving } =
+		useBodyMovements();
+
+	// This should be passed in as props
+	const TARGET_BODY_MOVEMENTS = 50;
+
+	React.useEffect(() => {
+		setBodyMovementCount(0);
+		startMoving();
+		return () => {
+			stopMoving();
+		};
+	}, []);
+
+	React.useEffect(() => {
+		return TARGET_BODY_MOVEMENTS <= bodyMovementCount
+			? handleUserResults("story_complete")
+			: "null";
+	}, [bodyMovementCount]);
+
+	/*
+	 * @params
+	 */
+
+	// Disable Back Button
+	const { backDisabled } = useDisableHardwareBack();
+	useFocusEffect(backDisabled());
+
+	/*
+	 *Video monitoring functions
+	 */
+
+	const _onPlaybackStatusUpdate = async (status) => {
+		// if (status.didJustFinish) return handleUserResults("success");
+		// if (status.didJustFinish) return handleUserResults("story_complete");
+		// if (status.didJustFinish) console.log("Finished!!!!");
+
+		setVideoStatus(status);
+		// console.log(videoStatus);
+	};
+
+	const handleChapterSuccess = () => {
+		console.log(
+			"Body Movement Count",
+			bodyMovementCount,
+			"Target: ",
+			TARGET_BODY_MOVEMENTS
+		);
+		if (TARGET_BODY_MOVEMENTS === bodyMovementCount)
+			return handleUserResults("success");
+		return;
+	};
+
+	const handleQuitPressed = () => {
+		handlePlayVideoPlayback("pause");
+		setShowConfirmModal(true);
+	};
+
+	const handleCancelPressed = () => {
+		handlePlayVideoPlayback("play");
+		setShowConfirmModal(false);
+	};
 
 	const handleQuitDance = () => {
-		setShowConfirmModal(false);
+		handleUnloadVideo().then(() => setShowConfirmModal(false));
 		return navigation.navigate(routes.home.STORY);
 	};
+
+	const handleUserResults = (status) => {
+		switch (status) {
+			case "success":
+				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
+					data: { success: true },
+				});
+				break;
+			case "failed":
+				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
+					data: { success: false },
+				});
+				break;
+			case "story_complete":
+				navigation.navigate(routes.home.STORY_FINISHED_SCREEN, {
+					data: { success: null },
+				});
+				break;
+			default:
+				return;
+		}
+	};
+
 	return (
 		<>
 			{showConfirmModal && (
 				<ConfirmModal
-					onCancelClicked={() => setShowConfirmModal(false)}
+					onCancelClicked={handleCancelPressed}
 					onConfirmClicked={handleQuitDance}
 				/>
 			)}
 			<ScreenContainer backgroundColor={COLORS.dark}>
 				<Container>
 					<PageHeaderSmall title="AJ's Big FIGHT // CHAPTER 1" />
-					<VideoContainer />
+					<FlexSpacer />
 					<BottomSection>
 						<StepMinuteContainer>
 							<MessageText>17000 steps</MessageText>
@@ -98,18 +199,38 @@ const DanceScreen = ({ navigation }) => {
 							<MessageText>30 Minutes</MessageText>
 						</StepMinuteContainer>
 						<StatusContainer>
-							<InstructionTextWhite>Steps so far</InstructionTextWhite>
-							<NumberText>7000</NumberText>
+							<InstructionTextWhite>Your body movements</InstructionTextWhite>
+							<NumberText>{bodyMovementCount}</NumberText>
 						</StatusContainer>
 						<InstructionText>07:34 Minutes to go!</InstructionText>
 						<Spacer />
-						<QuitButton onPress={() => setShowConfirmModal(true)} />
+						<QuitButton onPress={handleQuitPressed} />
 						<Spacer />
 					</BottomSection>
+					<VideoContainer>
+						<Video
+							ref={videoRef}
+							source={require("../../../assets/video/story/chapter1/chapter1_intro.mp4")}
+							style={styles.video}
+							resizeMode={Video.RESIZE_MODE_COVER}
+							onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
+							shouldPlay={true}
+							isLooping={true}
+							rate={2}
+						/>
+					</VideoContainer>
 				</Container>
 			</ScreenContainer>
 		</>
 	);
 };
+
+const styles = StyleSheet.create({
+	video: {
+		width: "100%",
+		height: "100%",
+		flex: 1,
+	},
+});
 
 export default DanceScreen;

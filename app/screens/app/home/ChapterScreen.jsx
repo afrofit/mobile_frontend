@@ -1,5 +1,8 @@
 import * as React from "react";
+import * as Linking from "expo-linking";
 import styled from "styled-components/native";
+import { Platform } from "react-native";
+
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
@@ -9,6 +12,7 @@ import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
+import { MIXCLOUD_URL } from "../../../config/config";
 
 const Container = styled.View`
 	height: 100%;
@@ -67,9 +71,12 @@ const Touchable = styled.Pressable``;
 
 const ChapterScreen = ({ navigation }) => {
 	const selectMusicMix = () => {
-		console.log(
-			"This should launch the mobile web browser with a link to Afrofit's MixCloud"
-		);
+		Linking.openURL(MIXCLOUD_URL);
+	};
+
+	const minimizeApp = () => {
+		if (Platform.OS === "ios") return Linking.openURL("music://");
+		console.log("Na android");
 	};
 
 	return (
@@ -90,10 +97,12 @@ const ChapterScreen = ({ navigation }) => {
 						<InstructionText>Tap here to select music Mix</InstructionText>
 					</Touchable>
 					<Spacer />
-					<InstructionTextWhite>
-						Or minimize this app and select your music from your device's music
-						player
-					</InstructionTextWhite>
+					<Touchable onPress={minimizeApp}>
+						<InstructionTextWhite>
+							Or minimize this app and select your music from your device's
+							music player
+						</InstructionTextWhite>
+					</Touchable>
 				</BottomSection>
 				<Spacer />
 				<Button

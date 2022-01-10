@@ -26,5 +26,6 @@ export default Object.freeze({
 		CHAPTER: "Chapter",
 		DANCE: "Dance",
 		PERFORMANCE_RESULTS_SCREEN: "PerformanceResultsScreen",
+		STORY_FINISHED_SCREEN: "StoryFinishedScreen",
 	},
 });
