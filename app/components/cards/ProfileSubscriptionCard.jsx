@@ -36,7 +36,7 @@ const ProfileSubscriptionCard = ({
 	isPremium,
 	onTapSubscribe,
 }) => {
-	// All useState Stuff setup here
+	/**State */
 	const [error, setError] = React.useState();
 	console.log("Subscription from ProfileSubCard: ", subscription);
 	const { endDate, isExpired, name, startDate, id } = subscription;
