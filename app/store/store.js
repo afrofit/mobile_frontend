@@ -1,15 +1,6 @@
-import { createStore, combineReducers, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { performanceReducer } from "./reducers/activityReducer";
-import { rankingsReducer } from "./reducers/rankingsReducer";
-import { subscriptionReducer } from "./reducers/subscriptionReducer";
-import { userReducer } from "./reducers/userReducer";
+import { configureStore } from "@reduxjs/toolkit";
+import { rootReducer } from "./rootReducer";
 
-const rootReducer = combineReducers({
-	user: userReducer,
-	activity: performanceReducer,
-	rankings: rankingsReducer,
-	subscription: subscriptionReducer,
-});
+const store = configureStore({ reducer: rootReducer });
 
-export const store = createStore(rootReducer, applyMiddleware(thunk));
+export default store;

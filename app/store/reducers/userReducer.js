@@ -1,43 +1,32 @@
+import { createSlice } from "@reduxjs/toolkit";
 import jwtDecode from "jwt-decode";
 import authStorage from "../../api/storage";
-
-// CONSTANTS
-const SET_CURRENT_USER = "user/setCurrentUser";
-const SET_CURRENT_USER_ASYNC = "user/setCurrentUserAsync";
-const UNSET_CURRENT_USER = "user/setCurrentUser";
 
 const initialState = {
 	currentUser: null,
 };
 
-export function userReducer(state = initialState, action) {
-	if (action.type === UNSET_CURRENT_USER) {
-		return { ...state, currentUser: action.payload };
-	} else if (action.type === SET_CURRENT_USER) {
-		return { ...state, currentUser: action.payload };
-	} else if (action.type === SET_CURRENT_USER_ASYNC) {
-		return setTimeout(() => {
-			return { ...state, currentUser: action.payload };
-		}, 2000);
-	}
-	return state;
-}
-
-// ACTION CREATORS
-export const setCurrentUser = (user) => ({
-	type: SET_CURRENT_USER,
-	payload: user,
+const userSlice = createSlice({
+	name: "user",
+	initialState,
+	reducers: {
+		setCurrentUser(state, { payload }) {
+			state.currentUser = payload;
+		},
+		setCurrentUserAsync(state, { payload }) {
+			setTimeout(() => (state.currentUser = payload), 2000);
+		},
+		unsetCurrentUser(state, { payload }) {
+			state.currentUser = payload;
+		},
+	},
 });
 
-export const setCurrentUserAsync = (user) => ({
-	type: SET_CURRENT_USER_ASYNC,
-	payload: user,
-});
+export const { setCurrentUser, setCurrentUserAsync, unsetCurrentUser } =
+	userSlice.actions;
 
-export const unsetCurrentUser = () => ({
-	type: UNSET_CURRENT_USER,
-	payload: null,
-});
-
-// SELECTORS
+/**Selectors */
 export const getCurrentUser = (state) => state.user.currentUser;
+
+/**Reducers */
+export default userSlice.reducer;

@@ -1,7 +1,22 @@
-const intialState = {
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
 	currentUserRank: 1,
 };
 
-export function rankingsReducer(state = intialState, action) {
-	return state;
-}
+const rankingsSlice = createSlice({
+	name: "rankings",
+	initialState,
+	reducers: {
+		setCurrentUserRank(state, { payload }) {
+			state.currentUserRank = payload;
+		},
+	},
+});
+
+export const { setCurrentUserRank } = rankingsSlice.actions;
+
+/* *Selectors */
+export const getCurrentUserRank = (state) => state.rankings.currentUserRank;
+
+export default rankingsSlice.reducer;

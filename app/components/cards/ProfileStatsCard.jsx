@@ -37,10 +37,10 @@ const StatsLine = styled.View`
 `;
 
 const ProfileStatsCard = ({
-	calBurned = 200,
-	bodyMoves = "170k",
-	hoursDanced = "2k",
-	daysActive = 30,
+	calBurned,
+	bodyMoves,
+	hoursDanced,
+	daysActive,
 }) => {
 	return (
 		<Card>

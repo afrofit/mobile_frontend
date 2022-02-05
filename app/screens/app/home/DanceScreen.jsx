@@ -3,6 +3,10 @@ import styled from "styled-components/native";
 import { Video } from "expo-av";
 import { StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import parseMillis from "parse-ms";
+import { Timer, Time, TimerOptions } from "timer-node";
+import useAsyncEffect from "use-async-effect";
+import { ANNOUNCEMENT_TYPE_DATA } from "../../../data/announcement-data";
 
 import QuitButton from "../../../components/buttons/QuitButton";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
@@ -17,6 +21,9 @@ import useDisableHardwareBack from "../../../hooks/useDisableHardwareBack";
 import useVideo from "../../../hooks/useVideo";
 import VideoContainer from "../../../utilities/VideoContainer";
 import useBodyMovements from "../../../hooks/useBodyMovements";
+import { useDispatch } from "react-redux";
+import { updateUserDailyActivity } from "../../../store/reducers/activityReducer";
+import useAudioAnnouncer from "../../../hooks/useAudioAnnouncer";
 
 const Container = styled.View`
 	height: 100%;
@@ -80,6 +87,7 @@ const BottomSection = styled.View`
 `;
 
 const DanceScreen = ({ navigation }) => {
+	const dispatch = useDispatch();
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 	const [videoStatus, setVideoStatus] = React.useState();
 
@@ -93,8 +101,23 @@ const DanceScreen = ({ navigation }) => {
 	const { bodyMovementCount, setBodyMovementCount, startMoving, stopMoving } =
 		useBodyMovements();
 
+	const { handleAnnouncement } = useAudioAnnouncer();
+
 	// This should be passed in as props
 	const TARGET_BODY_MOVEMENTS = 50;
+	const CAL_BURN_RATE_PER_MOVE = 0.00175;
+	const TARGET_DANCE_TIME_MS = 1000 * 60 * 50; // 50 minutes
+
+	// console.log(parseMillis(TARGET_DANCE_TIME_MS));
+	const { hours, minutes, seconds } = parseMillis(TARGET_DANCE_TIME_MS);
+
+	/**Effects */
+
+	useAsyncEffect(async () => {
+		if (bodyMovementCount === 5) {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_100);
+		}
+	}, []);
 
 	React.useEffect(() => {
 		setBodyMovementCount(0);
@@ -108,6 +131,14 @@ const DanceScreen = ({ navigation }) => {
 		return TARGET_BODY_MOVEMENTS <= bodyMovementCount
 			? handleUserResults("story_complete")
 			: "null";
+	}, [bodyMovementCount]);
+
+	React.useEffect(() => {
+		const payload = {
+			caloriesBurned: Math.ceil(bodyMovementCount / 10),
+			bodyMoves: Math.floor(bodyMovementCount / 3),
+		};
+		dispatch(updateUserDailyActivity(payload));
 	}, [bodyMovementCount]);
 
 	/*
@@ -194,15 +225,17 @@ const DanceScreen = ({ navigation }) => {
 					<FlexSpacer />
 					<BottomSection>
 						<StepMinuteContainer>
-							<MessageText>17000 steps</MessageText>
+							<MessageText>{TARGET_BODY_MOVEMENTS} steps</MessageText>
 							<OneStarElement width={60} />
-							<MessageText>30 Minutes</MessageText>
+							<MessageText>
+								{minutes} / {minutes} mins
+							</MessageText>
 						</StepMinuteContainer>
 						<StatusContainer>
 							<InstructionTextWhite>Your body movements</InstructionTextWhite>
 							<NumberText>{bodyMovementCount}</NumberText>
 						</StatusContainer>
-						<InstructionText>07:34 Minutes to go!</InstructionText>
+						{/* <InstructionText>07:34 Minutes to go!</InstructionText> */}
 						<Spacer />
 						<QuitButton onPress={handleQuitPressed} />
 						<Spacer />
