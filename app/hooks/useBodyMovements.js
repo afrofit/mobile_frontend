@@ -8,7 +8,6 @@ const useBodyMovements = () => {
 
 	React.useState(() => {
 		Pedometer.isAvailableAsync().then((result) => {
-			console.log("Pedometer Status: ", result);
 			return setPedometerIsAvailable(result);
 		});
 	}, []);

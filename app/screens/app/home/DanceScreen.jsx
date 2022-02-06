@@ -4,9 +4,9 @@ import { Video } from "expo-av";
 import { StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import parseMillis from "parse-ms";
-import { Timer, Time, TimerOptions } from "timer-node";
 import useAsyncEffect from "use-async-effect";
 import { ANNOUNCEMENT_TYPE_DATA } from "../../../data/announcement-data";
+import Timer from "tiny-timer";
 
 import QuitButton from "../../../components/buttons/QuitButton";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
@@ -90,6 +90,7 @@ const DanceScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 	const [videoStatus, setVideoStatus] = React.useState();
+	const [timer, setTimer] = React.useState(new Timer());
 
 	const videoRef = React.useRef(null);
 
@@ -107,6 +108,10 @@ const DanceScreen = ({ navigation }) => {
 	const TARGET_BODY_MOVEMENTS = 50;
 	const CAL_BURN_RATE_PER_MOVE = 0.00175;
 	const TARGET_DANCE_TIME_MS = 1000 * 60 * 50; // 50 minutes
+	const TIME_DANCED = 1000 * 60 * 10; // 10 Minutes
+
+	timer.start(1000 * 60);
+	console.log("Timer", timer);
 
 	// console.log(parseMillis(TARGET_DANCE_TIME_MS));
 	const { hours, minutes, seconds } = parseMillis(TARGET_DANCE_TIME_MS);
@@ -135,8 +140,9 @@ const DanceScreen = ({ navigation }) => {
 
 	React.useEffect(() => {
 		const payload = {
-			caloriesBurned: Math.ceil(bodyMovementCount / 10),
 			bodyMoves: Math.floor(bodyMovementCount / 3),
+			caloriesBurned: CAL_BURN_RATE_PER_MOVE * (bodyMovementCount / 3),
+			totalTimeDancedInMilliseconds: TIME_DANCED,
 		};
 		dispatch(updateUserDailyActivity(payload));
 	}, [bodyMovementCount]);

@@ -27,8 +27,12 @@ export const fetchCurrentUserPerformanceData = async () => {
 	return checkAPIErrors(result);
 };
 
-export const saveCurrentUserPerformanceData = async () => {
-	const result = await apiClient.post();
+export const saveUserPerformanceData = async (activityData) => {
+	const result = await apiClient.post(
+		`${ACTIVITY_ENDPOINT_PREFIX}/save-user-activity`,
+		{ activityData }
+	);
+	return checkAPIErrors(result);
 };
 
 // export const expireCurrentUserSubscription = async (subId) => {

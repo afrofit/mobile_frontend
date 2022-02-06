@@ -90,7 +90,7 @@ const ProfileSubscriptionCard = ({
 				{expired && (
 					<>
 						<LabelText unsubscribed={isExpired}>
-							no current subscription
+							You're not subscribed.
 						</LabelText>
 						<Spacer />
 						{/* <Button text="Subscribe Now" onPress={handleCreateSubscription} /> */}
