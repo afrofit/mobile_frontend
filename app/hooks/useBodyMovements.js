@@ -2,19 +2,18 @@ import * as React from "react";
 import { Pedometer } from "expo-sensors";
 
 const useBodyMovements = () => {
-	// Pedometer.isAvailableAsync().then((result) =>
-	// 	console.log("Pedometer Status: ", result)
-	// );
-	const [bodyMovementCount, setBodyMovementCount] = React.useState(25);
+	const [bodyMovementCount, setBodyMovementCount] = React.useState(0);
+	const [pedometerIsAvailable, setPedometerIsAvailable] = React.useState(false);
 	let movementsSubscription;
 
-	const handleMoving = (result) => {
-		setBodyMovementCount(result.steps);
-	};
+	React.useState(() => {
+		Pedometer.isAvailableAsync().then((result) => {
+			return setPedometerIsAvailable(result);
+		});
+	}, []);
 
 	const startMoving = () => {
 		movementsSubscription = Pedometer.watchStepCount((result) =>
-			// handleMoving(result)
 			setBodyMovementCount(result.steps)
 		);
 	};
@@ -24,7 +23,13 @@ const useBodyMovements = () => {
 		movementsSubscription = null;
 	};
 
-	return { bodyMovementCount, setBodyMovementCount, startMoving, stopMoving };
+	return {
+		bodyMovementCount,
+		setBodyMovementCount,
+		startMoving,
+		stopMoving,
+		pedometerIsAvailable,
+	};
 };
 
 export default useBodyMovements;

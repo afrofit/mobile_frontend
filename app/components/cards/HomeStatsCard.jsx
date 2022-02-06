@@ -42,7 +42,7 @@ const StatContainer = ({ children }) => {
 	return <Stats>{children}</Stats>;
 };
 
-const HomeStatsCard = ({ calBurned = 200, bodyMoves = "170k" }) => {
+const HomeStatsCard = ({ calBurned, bodyMovements }) => {
 	return (
 		<Card>
 			<Font variant="small-caps" color={COLORS.grayDark}>
@@ -55,7 +55,7 @@ const HomeStatsCard = ({ calBurned = 200, bodyMoves = "170k" }) => {
 					<LabelText>Calories Burned</LabelText>
 				</StatContainer>
 				<StatContainer>
-					<NumberText>{bodyMoves}</NumberText>
+					<NumberText>{bodyMovements}</NumberText>
 					<LabelText>Body Moves</LabelText>
 				</StatContainer>
 			</StatsContainer>

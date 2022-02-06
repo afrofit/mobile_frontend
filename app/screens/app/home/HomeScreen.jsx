@@ -10,7 +10,7 @@ import TrialStartModal from "../../../components/modals/TrialStartModal";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
 import Font from "../../../elements/Font";
 import useSubscription from "../../../hooks/useSubscription";
-import { getTodaysActivity } from "../../../store/reducers/activityReducer";
+import { getDailyActivity } from "../../../store/reducers/activityReducer";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
 
 import { COLORS } from "../../../theme/colors";
@@ -25,15 +25,14 @@ const HomeScreen = ({ navigation }) => {
 	 */
 
 	const currentUser = useSelector(getCurrentUser);
-	const todaysActivity = useSelector(getTodaysActivity);
+	const todaysActivity = useSelector(getDailyActivity);
 
 	/*
 	 * Fetch relevant data from selectors
 	 */
 
 	const { username, isTrial, isPremium, hasTrial } = currentUser;
-	const { caloriesBurned, bodyMovements } = todaysActivity;
-
+	const { caloriesBurned, bodyMoves } = todaysActivity;
 	/*
 	 *useState for errors, modals etc
 	 */
@@ -178,7 +177,7 @@ const HomeScreen = ({ navigation }) => {
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />
 					<HomeStatsCard
 						calBurned={formatStatsNumbers(caloriesBurned)}
-						bodyMoves={formatStatsNumbers(bodyMovements)}
+						bodyMovements={formatStatsNumbers(bodyMoves)}
 					/>
 					<StoryListSection triggerNavigate={checkSubscriptionStatus} />
 				</ContentContainer>

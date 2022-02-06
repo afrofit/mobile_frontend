@@ -17,9 +17,9 @@ import { BORDER_RADIUS_MID } from "../../../theme/globals";
 import SingleInputModal from "../../../components/modals/SingleInputModal";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
 import { useSelector } from "react-redux";
-import { getTotalUserActivity } from "../../../store/reducers/activityReducer";
+import { getPerformanceData } from "../../../store/reducers/activityReducer";
 import { formatStatsNumbers } from "../../../utilities/formatters";
-import { getSubscription } from "../../../store/reducers/subscriptionReducer";
+import { getCurrentUserSubscription } from "../../../store/reducers/subscriptionReducer";
 import useSubscription from "../../../hooks/useSubscription";
 import subscriptionApi from "../../../api/subscription/subscriptionApi";
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
@@ -47,13 +47,13 @@ const ProfileScreen = ({}) => {
 	const [error, setError] = React.useState();
 
 	const currentUser = useSelector(getCurrentUser);
-	const totalUserStats = useSelector(getTotalUserActivity);
-	const subscription = useSelector(getSubscription);
+	const totalUserStats = useSelector(getPerformanceData);
+	const subscription = useSelector(getCurrentUserSubscription);
 
 	React.useEffect(() => {
-		console.log("Subscription from ProfileScreen", subscription);
-		console.log("CurrentUser from ProfileScreen", currentUser);
-		console.log("============  XoXoX  ===========");
+		// console.log("Subscription from ProfileScreen", subscription);
+		// console.log("CurrentUser from ProfileScreen", currentUser);
+		// console.log("============  XoXoX  ===========");
 	}, [subscription, currentUser]);
 
 	const {
@@ -70,8 +70,8 @@ const ProfileScreen = ({}) => {
 	} = currentUser;
 	const {
 		totalCaloriesBurned,
-		totalBodyMovements,
-		totalHoursDanced,
+		totalBodyMoves,
+		totalTimeDancedInMilliseconds,
 		totalDaysActive,
 	} = totalUserStats;
 
@@ -201,8 +201,8 @@ const ProfileScreen = ({}) => {
 						/>
 						<ProfileStatsCard
 							calBurned={formatStatsNumbers(totalCaloriesBurned)}
-							bodyMoves={formatStatsNumbers(totalBodyMovements)}
-							hoursDanced={formatStatsNumbers(totalHoursDanced)}
+							bodyMoves={formatStatsNumbers(totalBodyMoves)}
+							hoursDanced={formatStatsNumbers(totalTimeDancedInMilliseconds)}
 							daysActive={formatStatsNumbers(totalDaysActive)}
 						/>
 						<ProfileSubscriptionCard

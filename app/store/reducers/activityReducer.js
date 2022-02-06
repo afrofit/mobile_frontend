@@ -1,59 +1,97 @@
+import { createSlice } from "@reduxjs/toolkit";
+import {
+	fetchCurrentUserDailyActivity,
+	fetchCurrentUserPerformanceData,
+} from "../../api/activity/activityThunkControllers";
+
 const initialState = {
 	dailyActivity: {
-		caloriesBurned: 170000,
-		bodyMovements: 0,
+		caloriesBurned: 0,
+		bodyMoves: 0,
 	},
 	userStats: {
-		totalCaloriesBurned: 99660,
-		totalBodyMovements: 17000,
-		totalHoursDanced: 0,
+		totalCaloriesBurned: 0,
+		totalBodyMoves: 0,
+		totalTimeDancedInMilliseconds: 0,
 		totalDaysActive: 0,
 	},
 };
 
-export function performanceReducer(state = initialState, action) {
-	if (action.type === SET_USER_DAILY_ACTIVITY) {
-		const { caloriesBurned, bodyMovements } = action.payload;
-		const newCalorieBurned =
-			state.dailyActivity.caloriesBurned + caloriesBurned;
-		const newBodyMovements = state.dailyActivity.bodyMovements + bodyMovements;
-		return {
-			...state,
-			dailyActivity: {
-				caloriesBurned: newCalorieBurned,
-				bodyMovements: newBodyMovements,
-			},
-		};
-	} else if (action.type === RESET_USER_DAILY_ACTIVITY) {
-		return { ...state, dailyActivity: { caloriesBurned: 0, bodyMovements: 0 } };
-	} else if (action.type === SET_TOTAL_USER_ACTIVITY) {
-		return { ...state, userStats: action.payload };
-	}
-	return state;
+const performanceSlice = createSlice({
+	name: "performance",
+	initialState,
+	reducers: {
+		setUserDailyActivity(state, { payload }) {
+			state.dailyActivity = payload;
+		},
+		updateUserDailyActivity(state, { payload }) {
+			const { caloriesBurned, bodyMoves } = payload;
+			state.dailyActivity = {
+				caloriesBurned: (state.dailyActivity.caloriesBurned += caloriesBurned),
+				bodyMoves: (state.dailyActivity.bodyMoves += bodyMoves),
+			};
+		},
+		setTotalUserActivity(state, { payload }) {
+			console.log("Total Activity Payload", payload);
+			const {
+				totalBodyMoves,
+				totalCaloriesBurned,
+				totalDaysActive,
+				totalTimeDancedInMilliseconds,
+			} = payload;
+			state.userStats = {
+				totalBodyMoves,
+				totalCaloriesBurned,
+				totalTimeDancedInMilliseconds,
+				totalDaysActive,
+			};
+		},
+		resetUserDailyActivity(state) {
+			state.dailyActivity = { caloriesBurned: 0, bodyMoves: 0 };
+		},
+	},
+});
+
+export const {
+	setUserDailyActivity,
+	updateUserDailyActivity,
+	setTotalUserActivity,
+	resetUserDailyActivity,
+} = performanceSlice.actions;
+
+/**Selectors */
+export const getDailyActivity = (state) => state.activity.dailyActivity;
+export const getPerformanceData = (state) => state.activity.userStats;
+
+/**Thunks */
+export function requestUserDailyActivity() {
+	return (dispatch, getState) => {
+		fetchCurrentUserDailyActivity().then((response) => {
+			// console.log("DailyActivity Response from Thunk", response);
+			const { bodyMoves, caloriesBurned } = response;
+			return dispatch(
+				setUserDailyActivity({
+					bodyMoves,
+					caloriesBurned,
+				})
+			);
+			// return dispatch(resetUserDailyActivity());
+		});
+	};
 }
 
-//Constants
+export function saveUserDailyActivity() {
+	return (_, getState) => {};
+}
 
-const SET_USER_DAILY_ACTIVITY = "activity/setUserDailyActivity";
-const SET_TOTAL_USER_ACTIVITY = "activity/setTotalUserActivity";
-const RESET_USER_DAILY_ACTIVITY = "activity/setUserDailyActivity";
+export function requestUserPerformanceData() {
+	return (dispatch, getState) => {
+		fetchCurrentUserPerformanceData().then((response) => {
+			// console.log("UserPerformance Response from Thunk", response);
+			return dispatch(setTotalUserActivity(response));
+		});
+	};
+}
 
-// Action Creators
-export const setUserDailyActivity = (activity) => ({
-	type: SET_USER_DAILY_ACTIVITY,
-	payload: activity,
-});
-
-export const setTotalUserActivity = (stats) => ({
-	type: SET_TOTAL_USER_ACTIVITY,
-	payload: stats,
-});
-
-export const resetUserDailyActivity = () => ({
-	type: RESET_USER_DAILY_ACTIVITY,
-	payload: null,
-});
-
-// Selectors
-export const getTodaysActivity = (state) => state.activity.dailyActivity;
-export const getTotalUserActivity = (state) => state.activity.userStats;
+/**Reducer */
+export default performanceSlice.reducer;

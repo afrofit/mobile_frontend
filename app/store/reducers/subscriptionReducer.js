@@ -1,11 +1,11 @@
+import { createSlice } from "@reduxjs/toolkit";
 import subscriptionApi from "../../api/subscription/subscriptionApi";
+import { fetchCurrentUserSubscription } from "../../api/subscription/subscriptionThunkControllers";
 import useApi from "../../hooks/useApi";
-
-// import { getCurrentSubscription } from "../../api/subscription";
 
 export const UNSUBSCRIBED = "unsubscribed";
 
-const intialState = {
+const initialState = {
 	subscription: {
 		endDate: "",
 		id: "",
@@ -15,58 +15,84 @@ const intialState = {
 	},
 };
 
-const SET_SUBSCRIPTION = "subscription/setSubscription";
-const RESET_SUBSCRIPTION = "subscription/resetSubscription;";
-
-export function subscriptionReducer(state = intialState, action) {
-	if (action.type === RESET_SUBSCRIPTION) {
-		return {
-			...state,
-			subscription: {
+const subscriptionSlice = createSlice({
+	name: "subscription",
+	initialState,
+	reducers: {
+		resetSubscription(state, { payload }) {
+			state.subscription = {
 				endDate: "",
 				id: "",
 				isExpired: true,
 				name: UNSUBSCRIBED,
 				startDate: "",
-			},
-		};
-	} else if (action.type === SET_SUBSCRIPTION) {
-		const { startDate, name, id, isExpired, endDate } = action.payload;
-		console.log("From Set Subscription Reducer", action.payload);
-		return {
-			...state,
-			subscription: {
+			};
+		},
+		setSubscription(state, { payload }) {
+			const { createdAt, name, id, isExpired, endDate } = payload;
+			state.subscription = {
 				endDate,
 				id,
 				isExpired,
 				name,
-				startDate,
-			},
-		};
-	}
-	return state;
-}
-
-//Action Creators
-export const setSubscription = (subscription) => ({
-	type: SET_SUBSCRIPTION,
-	payload: subscription,
+				startDate: createdAt,
+			};
+		},
+	},
 });
 
-export const resetSubscription = () => ({
-	type: RESET_SUBSCRIPTION,
-	payload: null,
-});
+export const { setSubscription, resetSubscription } = subscriptionSlice.actions;
 
-export function requestSubscription() {
-	return (dispatch) => {
-		const getSubscriptionApi = useApi(subscriptionApi.getCurrentSubscription);
-		getSubscriptionApi.request().then(({ data }) => {
-			console.log("Got it!", data);
-			return dispatch(setSubscription(data));
+/* *Thunks */
+export function requestCurrentUserSubscription() {
+	const TODAY = new Date();
+	return (dispatch, getState) => {
+		fetchCurrentUserSubscription().then((response) => {
+			console.log("Subscription Response from Thunk", response);
+			// const currentState = getState();
+			// if (currentState.subscription.subscription.name === UNSUBSCRIBED){
+
+			// }
+			// if (reponse)
+			if (!response) {
+				return dispatch(resetSubscription(response));
+			}
+			return dispatch(setSubscription(response));
 		});
 	};
 }
 
+/*React.useEffect(() => {
+		let currentSub;
+
+		(async function restoreUser() {
+			const user = await authStorage.getUser();
+			if (user) {
+				dispatch(setCurrentUser(user));
+				currentSub = await getCurrentUserSubscription();
+				console.log("Today", TODAY, "Current Sub End Date", currentSub.endDate);
+				// console.log("From index, this is current sub: ", currentSub);
+				if (!currentSub) {
+					return dispatch(resetSubscription());
+				} else if (currentSub && new Date(currentSub.endDate) < TODAY) {
+					dispatch(resetSubscription());
+					const { response } = await expireUserSubscription(currentSub.id);
+					console.log("From index, this is expired currentSub", response);
+					return updateSubscribedUser(response);
+				} else {
+					return dispatch(
+						setSubscription({ ...currentSub, startDate: currentSub.createdAt })
+					);
+				}
+			}
+			console.log("From index, this is current sub: ", currentSub);
+
+		
+	// })();
+	// }, [dispatch]); */
+
 //Selectors
-export const getSubscription = (state) => state.subscription.subscription;
+export const getCurrentUserSubscription = (state) =>
+	state.subscription.subscription;
+
+export default subscriptionSlice.reducer;
