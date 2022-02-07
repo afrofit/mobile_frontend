@@ -1,9 +1,13 @@
 import * as React from "react";
+import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+import contentApi from "../../../api/content/contentApi";
 import subscriptionApi from "../../../api/subscription/subscriptionApi";
 import HomeStatsCard from "../../../components/cards/HomeStatsCard";
 import { ContentContainer } from "../../../components/ContentContainer";
+import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
+import Loader from "../../../components/Loader";
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
@@ -11,6 +15,10 @@ import StoryListSection from "../../../components/sections/home/StoryListSection
 import Font from "../../../elements/Font";
 import useSubscription from "../../../hooks/useSubscription";
 import { getDailyActivity } from "../../../store/reducers/activityReducer";
+import {
+	getCurrentUserSubscription,
+	setSubscription,
+} from "../../../store/reducers/subscriptionReducer";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
 
 import { COLORS } from "../../../theme/colors";
@@ -19,12 +27,15 @@ import { formatStatsNumbers } from "../../../utilities/formatters";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, subscription }) => {
+	const dispatch = useDispatch();
+
 	/*
 	 * use Selectors to grab data from Redux Store
 	 */
 
 	const currentUser = useSelector(getCurrentUser);
+	const currentSubscription = useSelector(getCurrentUserSubscription);
 	const todaysActivity = useSelector(getDailyActivity);
 
 	/*
@@ -38,6 +49,7 @@ const HomeScreen = ({ navigation }) => {
 	 */
 
 	const [error, setError] = React.useState();
+	const [stories, setStories] = React.useState([]);
 
 	const [showTrialModal, setShowTrialModal] = React.useState(false);
 
@@ -45,8 +57,8 @@ const HomeScreen = ({ navigation }) => {
 	 *Create Subscription API flow here
 	 */
 
-	const { createSubscription, updateSubscribedUser } = useSubscription();
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
+	const fetchStoresApi = useApi(contentApi.getStories);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
 		React.useState(false);
@@ -62,23 +74,31 @@ const HomeScreen = ({ navigation }) => {
 		value: "",
 	});
 
+	/**Effects */
+	React.useEffect(() => {
+		fetchStoriesSanity();
+	}, []);
+
 	/*
 	 * General functions
 	 */
-	const checkSubscriptionStatus = (story) => {
+
+	// Might have to do away with this logic fetch subscription from server direct
+	const checkSubscriptionStatus = (storyId) => {
 		// Check for subscription
-		if (!hasTrial && !isTrial && !isPremium)
+		if (currentSubscription.isExpired)
 			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-		else if (!isTrial && !isPremium && hasTrial) return setShowTrialModal(true);
-		return triggerNavigate(story);
+		// else if (!isTrial && !isPremium && hasTrial) return setShowTrialModal(true);
+		return triggerNavigate(storyId);
 	};
 
 	/*
 	 * Navigation logic
 	 */
 
-	const triggerNavigate = (story) => {
-		navigation.navigate(routes.home.STORY_INTRO, { data: story });
+	const triggerNavigate = (storyId) => {
+		console.log("Story Id, Homescreen", storyId);
+		navigation.navigate(routes.home.STORY_INTRO, { storyId });
 		// navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 		// 	data: { success: true },
 		// });
@@ -90,6 +110,15 @@ const HomeScreen = ({ navigation }) => {
 
 	const handleCreateSubscription = async (value) => {
 		switch (value) {
+			case "trial":
+				setShowConfirmModal({
+					...showConfirmModal,
+					show: true,
+					value,
+					message:
+						"Start with a 7-day free trial. If you don't cancel you carry on a monthly subscription.",
+				});
+				break;
 			case "monthly":
 				setShowConfirmModal({
 					...showConfirmModal,
@@ -123,6 +152,20 @@ const HomeScreen = ({ navigation }) => {
 		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
 	};
 
+	const fetchStoriesSanity = async () => {
+		const result = await fetchStoresApi.request();
+
+		if (!result.ok) {
+			if (result.data) {
+				setError(result.data);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+			return;
+		}
+		setStories(result.data);
+	};
+
 	const triggerCreateSubscription = async (value) => {
 		console.log("Value", value);
 		const result = await createSubscriptionApi.request(value);
@@ -135,15 +178,18 @@ const HomeScreen = ({ navigation }) => {
 			}
 			return;
 		}
-		updateSubscribedUser(result.data.token);
-		createSubscription(result.data.response);
-
+		dispatch(setSubscription(result.data));
 		setShowConfirmModal(!showConfirmModal);
 		return setShowChooseSubscriptionModal(false);
 	};
 
 	return (
 		<>
+			<Loader
+				// visible={true}
+				visible={createSubscriptionApi.loading || fetchStoresApi.loading}
+				message="Loading your content"
+			/>
 			{showConfirmModal.show && (
 				<ConfirmModal
 					onCancelClicked={() => {
@@ -172,6 +218,7 @@ const HomeScreen = ({ navigation }) => {
 				/>
 			)}
 			<ScreenContainer backgroundColor={COLORS.dark} noTouch={true}>
+				<FormErrorMessage error={error} />
 				<ContentContainer>
 					{/* <Spacer h="10px" /> */}
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />
@@ -179,7 +226,10 @@ const HomeScreen = ({ navigation }) => {
 						calBurned={formatStatsNumbers(caloriesBurned)}
 						bodyMovements={formatStatsNumbers(bodyMoves)}
 					/>
-					<StoryListSection triggerNavigate={checkSubscriptionStatus} />
+					<StoryListSection
+						stories={stories}
+						triggerNavigate={checkSubscriptionStatus}
+					/>
 				</ContentContainer>
 			</ScreenContainer>
 		</>

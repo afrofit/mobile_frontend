@@ -45,7 +45,6 @@ export const { setSubscription, resetSubscription } = subscriptionSlice.actions;
 
 /* *Thunks */
 export function requestCurrentUserSubscription() {
-	const TODAY = new Date();
 	return (dispatch, getState) => {
 		fetchCurrentUserSubscription().then((response) => {
 			console.log("Subscription Response from Thunk", response);
@@ -61,35 +60,6 @@ export function requestCurrentUserSubscription() {
 		});
 	};
 }
-
-/*React.useEffect(() => {
-		let currentSub;
-
-		(async function restoreUser() {
-			const user = await authStorage.getUser();
-			if (user) {
-				dispatch(setCurrentUser(user));
-				currentSub = await getCurrentUserSubscription();
-				console.log("Today", TODAY, "Current Sub End Date", currentSub.endDate);
-				// console.log("From index, this is current sub: ", currentSub);
-				if (!currentSub) {
-					return dispatch(resetSubscription());
-				} else if (currentSub && new Date(currentSub.endDate) < TODAY) {
-					dispatch(resetSubscription());
-					const { response } = await expireUserSubscription(currentSub.id);
-					console.log("From index, this is expired currentSub", response);
-					return updateSubscribedUser(response);
-				} else {
-					return dispatch(
-						setSubscription({ ...currentSub, startDate: currentSub.createdAt })
-					);
-				}
-			}
-			console.log("From index, this is current sub: ", currentSub);
-
-		
-	// })();
-	// }, [dispatch]); */
 
 //Selectors
 export const getCurrentUserSubscription = (state) =>
