@@ -46,7 +46,7 @@ const ChooseSubscriptionTypeModal = ({
 	return (
 		<BackgroundOverlay>
 			<ModalBG>
-				<PageHeaderSmall title={"You're not subscribed!"} />
+				<PageHeaderSmall title={"You need to be subscribed!"} />
 				<Element
 					size={220}
 					source={require("../../assets/images/art/model_male_01.png")}
@@ -65,6 +65,11 @@ const ChooseSubscriptionTypeModal = ({
 					text="£14.99 / YEARLY"
 					variant="white"
 					onPress={() => handleCreateSubscription("yearly")}
+				/>
+				<Button
+					text="TRIAL"
+					variant="red"
+					onPress={() => handleCreateSubscription("trial")}
 				/>
 				<Spacer h="10px" />
 				<ClearButton

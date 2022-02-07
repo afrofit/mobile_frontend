@@ -68,7 +68,8 @@ const InstructionTextWhite = styled(InstructionText)`
 `;
 
 const StoryIntroScreen = ({ navigation, route }) => {
-	const {} = route.params;
+	const { storyId } = route.params;
+	// console.log("Story ID", storyId);
 	const [videoStatus, setVideoStatus] = React.useState();
 
 	/*
@@ -88,7 +89,6 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	const _onPlaybackStatusUpdate = async (status) => {
 		if (status.didJustFinish) {
 			// do something specific
-			// console.log("___FINISHED!____");
 		}
 		setVideoStatus(status);
 		// console.log(videoStatus);

@@ -1,9 +1,6 @@
 import * as React from "react";
 import styled from "styled-components/native";
-import subscriptionApi from "../../api/subscription/subscriptionApi";
 import Font from "../../elements/Font";
-import useApi from "../../hooks/useApi";
-import useSubscription from "../../hooks/useSubscription";
 import { COLORS } from "../../theme/colors";
 import Spacer from "../../utilities/Spacer";
 import Button from "../buttons/Button";
@@ -32,40 +29,12 @@ const Container = styled.View`
 
 const ProfileSubscriptionCard = ({
 	subscription,
-	isTrial,
-	isPremium,
 	onTapSubscribe,
+	onCancelSubscription,
 }) => {
 	/**State */
-	const [error, setError] = React.useState();
 	console.log("Subscription from ProfileSubCard: ", subscription);
-	const { endDate, isExpired, name, startDate, id } = subscription;
-
-	//Create Subscription API flow here
-	const { resetCurrentSubscription, updateSubscribedUser } = useSubscription();
-	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
-
-	const handleCancelSubscription = async () => {
-		const result = await cancelSubscriptionApi.request(id);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		console.log("Subscription cancelled? ", result.data);
-		updateSubscribedUser(result.data.token);
-		return resetCurrentSubscription();
-	};
-
-	const subscribed =
-		(!isTrial && isPremium && !isExpired) ||
-		(isTrial && !isPremium && !isExpired);
-
-	const expired = (isExpired && !id) || (isExpired && name === "unsubscribed");
+	const { endDate, isExpired, name, id } = subscription;
 
 	return (
 		<Card color={isExpired ? COLORS.red : COLORS.darker}>
@@ -74,7 +43,7 @@ const ProfileSubscriptionCard = ({
 			</Font>
 			<Spacer />
 			<Container>
-				{subscribed && (
+				{!isExpired && (
 					<>
 						<LabelText>Your {name} subscription ends on</LabelText>
 						<Spacer h="10px" />
@@ -82,18 +51,17 @@ const ProfileSubscriptionCard = ({
 						<Spacer />
 						<Button
 							text="Cancel Subscription"
-							onPress={() => handleCancelSubscription(id)}
+							onPress={() => onCancelSubscription(id)}
 						/>
 					</>
 				)}
 
-				{expired && (
+				{isExpired && (
 					<>
 						<LabelText unsubscribed={isExpired}>
 							You're not subscribed.
 						</LabelText>
 						<Spacer />
-						{/* <Button text="Subscribe Now" onPress={handleCreateSubscription} /> */}
 						<Button text="Subscribe Now" onPress={onTapSubscribe} />
 					</>
 				)}

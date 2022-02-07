@@ -27,7 +27,7 @@ const StatusTag = styled.View`
 	padding-right: 5px;
 	padding-top: 2px;
 	padding-bottom: 2px;
-    border-radius: ${BORDER_RADIUS_SMALL}
+	border-radius: ${BORDER_RADIUS_SMALL};
 	background-color: ${COLORS.white};
 `;
 
@@ -40,15 +40,10 @@ const TitleContainer = styled.View`
 
 const Touchable = styled.Pressable``;
 
-const StoryCard = ({
-	storyTitle,
-	storyStatus,
-	onPress,
-	source = require("../../assets/images/art/stories/cover_sample.jpg"),
-}) => {
+const StoryCard = ({ storyTitle, storyStatus, onPress, source }) => {
 	return (
 		<Touchable onPress={onPress}>
-			<Background source={source}>
+			<Background source={{ uri: source }}>
 				<StatusTag>
 					<Font variant="small-caps" color={COLORS.grayDarker}>
 						{storyStatus}% Complete

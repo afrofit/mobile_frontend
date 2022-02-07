@@ -1,6 +1,7 @@
 import * as React from "react";
 import styled from "styled-components/native";
 import { StyleSheet } from "react-native";
+import { useDispatch } from "react-redux";
 
 import ProfileNameCard from "../../../components/cards/ProfileNameCard";
 import ProfileStatsCard from "../../../components/cards/ProfileStatsCard";
@@ -19,8 +20,11 @@ import { getCurrentUser } from "../../../store/reducers/userReducer";
 import { useSelector } from "react-redux";
 import { getPerformanceData } from "../../../store/reducers/activityReducer";
 import { formatStatsNumbers } from "../../../utilities/formatters";
-import { getCurrentUserSubscription } from "../../../store/reducers/subscriptionReducer";
-import useSubscription from "../../../hooks/useSubscription";
+import {
+	getCurrentUserSubscription,
+	resetSubscription,
+	setSubscription,
+} from "../../../store/reducers/subscriptionReducer";
 import subscriptionApi from "../../../api/subscription/subscriptionApi";
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
@@ -40,6 +44,7 @@ const UserIdText = styled.Text`
 `;
 
 const ProfileScreen = ({}) => {
+	const dispatch = useDispatch();
 	/*
 	 *useState for errors, modals etc
 	 */
@@ -50,24 +55,7 @@ const ProfileScreen = ({}) => {
 	const totalUserStats = useSelector(getPerformanceData);
 	const subscription = useSelector(getCurrentUserSubscription);
 
-	React.useEffect(() => {
-		// console.log("Subscription from ProfileScreen", subscription);
-		// console.log("CurrentUser from ProfileScreen", currentUser);
-		// console.log("============  XoXoX  ===========");
-	}, [subscription, currentUser]);
-
-	const {
-		id: userId,
-		username,
-		email,
-		joinDate,
-		rankId,
-		hasTrial,
-		isTrial,
-		isPremium,
-		isTrialUntil,
-		isPremiumUntil,
-	} = currentUser;
+	const { id: userId, username, email, joinDate, rankId } = currentUser;
 	const {
 		totalCaloriesBurned,
 		totalBodyMoves,
@@ -80,11 +68,11 @@ const ProfileScreen = ({}) => {
 	const [editingUsername, setEditingUsername] = React.useState(false);
 
 	/*
-	 *Create Subscription API flow here
+	 *Create Subscription / Unsubscribe API flow here
 	 */
 
-	const { createSubscription, updateSubscribedUser } = useSubscription();
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
+	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
 		React.useState(false);
@@ -103,6 +91,15 @@ const ProfileScreen = ({}) => {
 
 	const handleCreateSubscription = async (value) => {
 		switch (value) {
+			case "trial":
+				setShowConfirmModal({
+					...showConfirmModal,
+					show: true,
+					value,
+					message:
+						"Start with a 7-day free trial. If you don't cancel you carry on a monthly subscription.",
+				});
+				break;
 			case "monthly":
 				setShowConfirmModal({
 					...showConfirmModal,
@@ -148,11 +145,24 @@ const ProfileScreen = ({}) => {
 			}
 			return;
 		}
-		updateSubscribedUser(result.data.token);
-		createSubscription(result.data.response);
-
+		dispatch(setSubscription(result.data));
 		setShowConfirmModal(!showConfirmModal);
 		return setShowChooseSubscriptionModal(false);
+	};
+
+	const handleCancelSubscription = async (subscriptionId) => {
+		const result = await cancelSubscriptionApi.request(subscriptionId);
+
+		if (!result.ok) {
+			if (result.data) {
+				setError(result.data);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+			return;
+		}
+		console.log("Subscription cancelled? ", result.data);
+		dispatch(resetSubscription());
 	};
 
 	return (
@@ -207,8 +217,7 @@ const ProfileScreen = ({}) => {
 						/>
 						<ProfileSubscriptionCard
 							subscription={subscription}
-							isTrial={isTrial}
-							isPremium={isPremium}
+							onCancelSubscription={handleCancelSubscription}
 							onTapSubscribe={() =>
 								setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
 							}
