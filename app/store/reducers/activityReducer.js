@@ -1,8 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {
-	fetchCurrentUserDailyActivity,
-	fetchCurrentUserPerformanceData,
-} from "../../api/activity/activityThunkControllers";
+import { fetchUserActivity } from "../../api/activity/activityThunkControllers";
 
 const initialState = {
 	dailyActivity: {
@@ -49,6 +46,14 @@ const performanceSlice = createSlice({
 		resetUserDailyActivity(state) {
 			state.dailyActivity = { caloriesBurned: 0, bodyMoves: 0 };
 		},
+		resetUserPerformance(state) {
+			state.userStats = {
+				totalCaloriesBurned: 0,
+				totalBodyMoves: 0,
+				totalTimeDancedInMilliseconds: 0,
+				totalDaysActive: 0,
+			};
+		},
 	},
 });
 
@@ -66,31 +71,39 @@ export const getPerformanceData = (state) => state.activity.userStats;
 /**Thunks */
 export function requestUserDailyActivity() {
 	return (dispatch, getState) => {
-		fetchCurrentUserDailyActivity().then((response) => {
+		fetchUserActivity().then((response) => {
 			// console.log("DailyActivity Response from Thunk", response);
-			const { bodyMoves, caloriesBurned } = response;
-			return dispatch(
-				setUserDailyActivity({
-					bodyMoves,
-					caloriesBurned,
-				})
-			);
-			// return dispatch(resetUserDailyActivity());
+			if (response) {
+				const { daily, performance } = response;
+				const { bodyMoves, caloriesBurned } = daily;
+				const {
+					totalCaloriesBurned,
+					totalBodyMoves,
+					totalTimeDancedInMilliseconds,
+					totalDaysActive,
+				} = performance;
+				dispatch(
+					setUserDailyActivity({
+						bodyMoves,
+						caloriesBurned,
+					})
+				);
+				return dispatch(
+					setTotalUserActivity({
+						totalCaloriesBurned,
+						totalBodyMoves,
+						totalTimeDancedInMilliseconds,
+						totalDaysActive,
+					})
+				);
+			}
+			return dispatch(resetUserDailyActivity());
 		});
 	};
 }
 
 export function saveUserDailyActivity() {
 	return (_, getState) => {};
-}
-
-export function requestUserPerformanceData() {
-	return (dispatch, getState) => {
-		fetchCurrentUserPerformanceData().then((response) => {
-			// console.log("UserPerformance Response from Thunk", response);
-			return dispatch(setTotalUserActivity(response));
-		});
-	};
 }
 
 /**Reducer */

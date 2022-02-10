@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+
 import contentApi from "../../../api/content/contentApi";
 import subscriptionApi from "../../../api/subscription/subscriptionApi";
 import HomeStatsCard from "../../../components/cards/HomeStatsCard";
@@ -12,8 +13,6 @@ import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscr
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
-import Font from "../../../elements/Font";
-import useSubscription from "../../../hooks/useSubscription";
 import { getDailyActivity } from "../../../store/reducers/activityReducer";
 import {
 	getCurrentUserSubscription,
@@ -25,9 +24,8 @@ import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";
 import { formatStatsNumbers } from "../../../utilities/formatters";
 import ScreenContainer from "../../../utilities/ScreenContainer";
-import Spacer from "../../../utilities/Spacer";
 
-const HomeScreen = ({ navigation, subscription }) => {
+const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 
 	/*
@@ -42,7 +40,7 @@ const HomeScreen = ({ navigation, subscription }) => {
 	 * Fetch relevant data from selectors
 	 */
 
-	const { username, isTrial, isPremium, hasTrial } = currentUser;
+	const { username, hasTrial } = currentUser;
 	const { caloriesBurned, bodyMoves } = todaysActivity;
 	/*
 	 *useState for errors, modals etc
@@ -58,13 +56,10 @@ const HomeScreen = ({ navigation, subscription }) => {
 	 */
 
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
-	const fetchStoresApi = useApi(contentApi.getStories);
+	const fetchStoriesApi = useApi(contentApi.getStories);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
 		React.useState(false);
-
-	// const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
-	// React.useState(!hasTrial && !isTrial && !isPremium);
 
 	const [showConfirmModal, setShowConfirmModal] = React.useState({
 		show: false,
@@ -88,7 +83,6 @@ const HomeScreen = ({ navigation, subscription }) => {
 		// Check for subscription
 		if (currentSubscription.isExpired)
 			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-		// else if (!isTrial && !isPremium && hasTrial) return setShowTrialModal(true);
 		return triggerNavigate(storyId);
 	};
 
@@ -97,7 +91,7 @@ const HomeScreen = ({ navigation, subscription }) => {
 	 */
 
 	const triggerNavigate = (storyId) => {
-		console.log("Story Id, Homescreen", storyId);
+		// console.log("Story Id, Homescreen", storyId);
 		navigation.navigate(routes.home.STORY_INTRO, { storyId });
 		// navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 		// 	data: { success: true },
@@ -153,7 +147,7 @@ const HomeScreen = ({ navigation, subscription }) => {
 	};
 
 	const fetchStoriesSanity = async () => {
-		const result = await fetchStoresApi.request();
+		const result = await fetchStoriesApi.request();
 
 		if (!result.ok) {
 			if (result.data) {
@@ -163,11 +157,12 @@ const HomeScreen = ({ navigation, subscription }) => {
 			}
 			return;
 		}
+		console.log("Stories", result.data);
 		setStories(result.data);
 	};
 
 	const triggerCreateSubscription = async (value) => {
-		console.log("Value", value);
+		// console.log("Value", value);
 		const result = await createSubscriptionApi.request(value);
 
 		if (!result.ok) {
@@ -187,7 +182,7 @@ const HomeScreen = ({ navigation, subscription }) => {
 		<>
 			<Loader
 				// visible={true}
-				visible={createSubscriptionApi.loading || fetchStoresApi.loading}
+				visible={createSubscriptionApi.loading || fetchStoriesApi.loading}
 				message="Loading your content"
 			/>
 			{showConfirmModal.show && (

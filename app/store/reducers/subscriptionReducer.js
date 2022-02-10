@@ -31,11 +31,11 @@ const subscriptionSlice = createSlice({
 		setSubscription(state, { payload }) {
 			const { createdAt, name, id, isExpired, endDate } = payload;
 			state.subscription = {
+				startDate: createdAt,
 				endDate,
 				id,
 				isExpired,
 				name,
-				startDate: createdAt,
 			};
 		},
 	},

@@ -4,4 +4,8 @@ import apiClient from "../client";
 const saveUserActivity = (activityData) =>
 	apiClient.post("/performance/save-user-activity", { activityData });
 
-export default { saveUserActivity };
+const getUserActivity = () => {
+	apiClient.get("/performance/get-user-activity");
+};
+
+export default { saveUserActivity, getUserActivity };

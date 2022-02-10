@@ -40,13 +40,15 @@ const TitleContainer = styled.View`
 
 const Touchable = styled.Pressable``;
 
-const StoryCard = ({ storyTitle, storyStatus, onPress, source }) => {
+const StoryCard = ({ storyTitle, completed, started, onPress, source }) => {
+	const message = started && !completed ? "Started" : "Fresh";
+
 	return (
 		<Touchable onPress={onPress}>
 			<Background source={{ uri: source }}>
 				<StatusTag>
 					<Font variant="small-caps" color={COLORS.grayDarker}>
-						{storyStatus}% Complete
+						{message}
 					</Font>
 				</StatusTag>
 				<TitleContainer>

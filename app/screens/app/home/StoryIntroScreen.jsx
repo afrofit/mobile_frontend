@@ -3,6 +3,7 @@ import styled from "styled-components/native";
 import { Video } from "expo-av";
 import { StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
 
 import Button from "../../../components/buttons/Button";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
@@ -14,6 +15,13 @@ import Spacer from "../../../utilities/Spacer";
 import { DEVICE_WIDTH, DEVICE_HEIGHT } from "../../../theme/globals";
 import useDisableHardwareBack from "../../../hooks/useDisableHardwareBack";
 import useVideo from "../../../hooks/useVideo";
+import Loader from "../../../components/Loader";
+import contentApi from "../../../api/content/contentApi";
+import {
+	getCurrentStory,
+	setCurrentStory,
+	unsetCurrentStory,
+} from "../../../store/reducers/contentReducer";
 
 //This screen is where video intro of storyline is played. Very important!
 const Container = styled.View`
@@ -69,8 +77,32 @@ const InstructionTextWhite = styled(InstructionText)`
 
 const StoryIntroScreen = ({ navigation, route }) => {
 	const { storyId } = route.params;
-	// console.log("Story ID", storyId);
 	const [videoStatus, setVideoStatus] = React.useState();
+	const [videoLoading, setVideoLoading] = React.useState(true);
+
+	const dispatch = useDispatch();
+
+	const currentStory = useSelector(getCurrentStory);
+
+	/**
+	 * API Calls
+	 */
+	const getStoryDetailApi = useApi(contentApi.getStoryDetails);
+
+	const getStoryDetails = React.useCallback(async (storyId) => {
+		const result = await getStoryDetailApi.request(storyId);
+
+		if (!result.ok) {
+			if (result.data) {
+				setError(result.data);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+			return;
+		}
+		console.log("Current Story", result.data);
+		return dispatch(setCurrentStory(result.data));
+	});
 
 	/*
 	 * Set up VideoRef
@@ -81,6 +113,13 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	// Disable Back Button
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
+
+	/**Effects */
+
+	React.useEffect(() => {
+		// console.log("Current Story", currentStory && currentStory.title);
+		getStoryDetails(storyId);
+	}, []);
 
 	/*
 	 *Video monitoring functions
@@ -98,47 +137,61 @@ const StoryIntroScreen = ({ navigation, route }) => {
 		handleUnloadVideo().then(() => navigation.navigate(routes.home.STORY));
 	};
 
+	const handleGoBack = () => {
+		dispatch(unsetCurrentStory());
+		return navigation.goBack();
+	};
+
 	return (
-		<ScreenContainer backgroundColor={COLORS.dark}>
-			<Container>
-				<PageHeaderSmall title="AJ's Big FIGHT // CHAPTER 1" />
-				<TopSection />
-				<MidSection>
-					<ThreeStarsElement />
-					<Spacer />
-					<InstructionTextWhite>
-						As his trainer, you must help AJ defeat 15 opponents to become world
-						champion!
-					</InstructionTextWhite>
-					<Spacer />
-					<ThreeStarsElement />
-				</MidSection>
-				<Button
-					variant="white"
-					text="Start Story"
-					onPress={handleStartStory}
-					disabled={videoStatus && videoStatus.positionMillis <= 5000}
-				/>
-				<Button
-					variant="red"
-					text="Exit Story"
-					onPress={() => navigation.goBack()}
-				/>
-				<Spacer />
-				<VideoContainer>
-					<Video
-						ref={videoRef}
-						source={require("../../../assets/video/story/chapter1/chapter1_intro.mp4")}
-						style={styles.video}
-						resizeMode={Video.RESIZE_MODE_COVER}
-						onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
-						shouldPlay={true}
-						isLooping={false}
-						rate={2}
-					/>
-				</VideoContainer>
-			</Container>
-		</ScreenContainer>
+		<>
+			<Loader
+				visible={getStoryDetailApi.loading || videoLoading}
+				message="Loading your content"
+			/>
+			<ScreenContainer backgroundColor={COLORS.dark}>
+				{currentStory && (
+					<Container>
+						<PageHeaderSmall
+							title={`${currentStory.title} // CHAPTER ${currentStory.storyOrderNumber}`}
+						/>
+						<TopSection />
+						<MidSection>
+							<ThreeStarsElement />
+							<Spacer />
+							<InstructionTextWhite>
+								{currentStory.description}
+							</InstructionTextWhite>
+							<Spacer />
+							<ThreeStarsElement />
+						</MidSection>
+						<Button
+							variant="white"
+							text="Start Story"
+							onPress={handleStartStory}
+							disabled={videoStatus && videoStatus.positionMillis <= 5000}
+						/>
+						<Button variant="red" text="Exit Story" onPress={handleGoBack} />
+						<Spacer />
+						<VideoContainer>
+							<Video
+								ref={videoRef}
+								// source={require("../../../assets/video/story/chapter1/chapter1_intro.mp4")}
+								source={{
+									uri: currentStory.introVideo,
+								}}
+								style={styles.video}
+								resizeMode={Video.RESIZE_MODE_COVER}
+								onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
+								shouldPlay={true}
+								isLooping={false}
+								rate={2}
+								onLoadStart={() => setVideoLoading(false)}
+							/>
+						</VideoContainer>
+					</Container>
+				)}
+			</ScreenContainer>
+		</>
 	);
 };
 

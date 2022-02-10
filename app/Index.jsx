@@ -9,30 +9,14 @@ import { getCurrentUser, setCurrentUser } from "./store/reducers/userReducer";
 import { useDispatch } from "react-redux";
 import VerifyEmailNavigator from "./navigator/VerifyCodeNavigator";
 import { useSelector } from "react-redux";
-import authStorage from "./api/storage";
-import {
-	getCurrentUserSubscription,
-	requestCurrentUserSubscription,
-	resetSubscription,
-	setSubscription,
-} from "./store/reducers/subscriptionReducer";
-import subscriptionApi from "./api/subscription/subscriptionApi";
-import useSubscription from "./hooks/useSubscription";
-import { Text } from "react-native";
-import useAsyncEffect from "use-async-effect";
-import {
-	getDailyActivity,
-	getPerformanceData,
-	requestUserDailyActivity,
-	requestUserPerformanceData,
-} from "./store/reducers/activityReducer";
+import { requestCurrentUserSubscription } from "./store/reducers/subscriptionReducer";
+import { requestUserDailyActivity } from "./store/reducers/activityReducer";
 import useAuth from "./hooks/useAuth";
 import { restoreStoredCurrentUser } from "./utilities/startup_scripts";
 
 const Index = () => {
 	const dispatch = useDispatch();
 	const { logOut } = useAuth();
-	// const { updateSubscribedUser } = useSubscription();
 
 	/**Local State */
 	const [error, setError] = React.useState(null);
@@ -47,7 +31,6 @@ const Index = () => {
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
 			dispatch(requestUserDailyActivity());
-			dispatch(requestUserPerformanceData());
 			dispatch(requestCurrentUserSubscription());
 		}
 	}, []);

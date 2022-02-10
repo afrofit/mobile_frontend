@@ -45,7 +45,7 @@ const ChapterFont = styled(StatusFont)`
 	margin-bottom: 5px;
 `;
 
-const ChapterCard = ({ status = "fresh", onPress }) => {
+const ChapterCard = ({ status = "fresh", onPress, number = 0 }) => {
 	const color =
 		status === "fresh"
 			? COLORS.red
@@ -55,7 +55,7 @@ const ChapterCard = ({ status = "fresh", onPress }) => {
 	return (
 		<Container onPress={onPress}>
 			<Top>
-				<ChapterFont>Play Chapter 1</ChapterFont>
+				<ChapterFont>Play Chapter {number}</ChapterFont>
 			</Top>
 			<Bottom color={color}>
 				<StatusFont>30% Complete</StatusFont>
