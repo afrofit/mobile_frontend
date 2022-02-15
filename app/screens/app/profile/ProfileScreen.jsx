@@ -134,7 +134,7 @@ const ProfileScreen = ({}) => {
 	};
 
 	const triggerCreateSubscription = async (value) => {
-		console.log("Value", value);
+		// console.log("Value", value);
 		const result = await createSubscriptionApi.request(value);
 
 		if (!result.ok) {
@@ -161,7 +161,7 @@ const ProfileScreen = ({}) => {
 			}
 			return;
 		}
-		console.log("Subscription cancelled? ", result.data);
+		// console.log("Subscription cancelled? ", result.data);
 		dispatch(resetSubscription());
 	};
 

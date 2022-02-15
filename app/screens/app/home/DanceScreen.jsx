@@ -5,9 +5,8 @@ import { StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import parseMillis from "parse-ms";
 import useAsyncEffect from "use-async-effect";
-import { ANNOUNCEMENT_TYPE_DATA } from "../../../data/announcement-data";
-import Timer from "tiny-timer";
 
+import { ANNOUNCEMENT_TYPE_DATA } from "../../../data/announcement-data";
 import QuitButton from "../../../components/buttons/QuitButton";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
@@ -21,9 +20,17 @@ import useDisableHardwareBack from "../../../hooks/useDisableHardwareBack";
 import useVideo from "../../../hooks/useVideo";
 import VideoContainer from "../../../utilities/VideoContainer";
 import useBodyMovements from "../../../hooks/useBodyMovements";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { updateUserDailyActivity } from "../../../store/reducers/activityReducer";
 import useAudioAnnouncer from "../../../hooks/useAudioAnnouncer";
+import useInterval from "../../../hooks/useInteval";
+import Loader from "../../../components/Loader";
+import { getCurrentStoryChapter } from "../../../store/reducers/contentReducer";
+import {
+	calculateActualSteps,
+	calculateTargetSteps,
+	calculateTargetTime,
+} from "../../../utilities/calculators";
 
 const Container = styled.View`
 	height: 100%;
@@ -86,11 +93,18 @@ const BottomSection = styled.View`
 	align-items: center;
 `;
 
-const DanceScreen = ({ navigation }) => {
+const DanceScreen = ({ navigation, route }) => {
+	const { storyTitle } = route.params;
 	const dispatch = useDispatch();
+
+	const currentChapter = useSelector(getCurrentStoryChapter);
+
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 	const [videoStatus, setVideoStatus] = React.useState();
-	const [timer, setTimer] = React.useState(new Timer());
+	const [videoLoading, setVideoLoading] = React.useState(true);
+	const [count, setCount] = React.useState(0);
+	const [delay, setDelay] = React.useState(1000);
+	const [timeDanced, setTimeDanced] = React.useState(timeSpentInMillis || 0);
 
 	const videoRef = React.useRef(null);
 
@@ -98,6 +112,9 @@ const DanceScreen = ({ navigation }) => {
 		videoRef,
 		videoStatus
 	);
+
+	const { timeSpentInMillis, targetTimeInMillis, targetBodyMoves, videoUrl } =
+		currentChapter;
 
 	const { bodyMovementCount, setBodyMovementCount, startMoving, stopMoving } =
 		useBodyMovements();
@@ -109,26 +126,74 @@ const DanceScreen = ({ navigation }) => {
 	const CAL_BURN_RATE_PER_MOVE = 0.00175;
 	const TARGET_DANCE_TIME_MS = 1000 * 60 * 50; // 50 minutes
 	const TIME_DANCED = 1000 * 60 * 10; // 10 Minutes
-
-	timer.start(1000 * 60);
-	console.log("Timer", timer);
+	const ONE_SECOND = 60000;
 
 	// console.log(parseMillis(TARGET_DANCE_TIME_MS));
-	const { hours, minutes, seconds } = parseMillis(TARGET_DANCE_TIME_MS);
+	const {
+		hours: targetHours,
+		minutes: targetMinutes,
+		seconds: targetSeconds,
+	} = parseMillis(calculateTargetTime(targetBodyMoves));
+	const { hours, minutes, seconds } = parseMillis(timeDanced);
 
 	/**Effects */
+	useInterval(() => {
+		setCount(count + 1);
+	}, delay);
+
+	useInterval(() => {
+		setTimeDanced(timeDanced + 1000);
+	}, delay);
+
+	const realStepsCount = calculateActualSteps(count);
 
 	useAsyncEffect(async () => {
-		if (bodyMovementCount === 5) {
+		if (realStepsCount === 50) {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_50);
+		}
+		if (realStepsCount === 100) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_100);
 		}
-	}, []);
+		if (realStepsCount === 200) {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_200);
+		}
+		if (realStepsCount === targetBodyMoves - 200) {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_200);
+		}
+		if (realStepsCount === targetBodyMoves - 100) {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_100);
+		}
+		if (realStepsCount === targetBodyMoves - 50) {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_50);
+		}
+
+		if (targetBodyMoves > 1200 && targetBodyMoves < 1500) {
+			if (realStepsCount === 500) {
+				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_200);
+			}
+		}
+		if (targetBodyMoves > 1501 && targetBodyMoves < 2300) {
+			if (realStepsCount === 500) {
+				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_500);
+			}
+			if (realStepsCount === 1000) {
+				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
+			}
+		}
+		if (targetBodyMoves > 2301 && targetBodyMoves < 2500) {
+			if (realStepsCount === 1000) {
+				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
+			}
+			if (realStepsCount === 2000) {
+				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_2000);
+			}
+		}
+	}, [realStepsCount]);
 
 	React.useEffect(() => {
-		setBodyMovementCount(0);
 		startMoving();
 		return () => {
-			stopMoving();
+			return stopMoving();
 		};
 	}, []);
 
@@ -139,17 +204,18 @@ const DanceScreen = ({ navigation }) => {
 	}, [bodyMovementCount]);
 
 	React.useEffect(() => {
+		const realBodyMovementCount = bodyMovementCount / 3;
 		const payload = {
-			bodyMoves: Math.floor(bodyMovementCount / 3),
-			caloriesBurned: CAL_BURN_RATE_PER_MOVE * (bodyMovementCount / 3),
+			bodyMoves: Math.floor(realBodyMovementCount),
+			caloriesBurned: CAL_BURN_RATE_PER_MOVE * realBodyMovementCount,
 			totalTimeDancedInMilliseconds: TIME_DANCED,
 		};
-		dispatch(updateUserDailyActivity(payload));
+		console.log("Payload", payload.bodyMoves);
+		console.log("Body Movement Count", bodyMovementCount);
+		if (bodyMovementCount === 50) {
+			return dispatch(updateUserDailyActivity(payload));
+		}
 	}, [bodyMovementCount]);
-
-	/*
-	 * @params
-	 */
 
 	// Disable Back Button
 	const { backDisabled } = useDisableHardwareBack();
@@ -160,12 +226,8 @@ const DanceScreen = ({ navigation }) => {
 	 */
 
 	const _onPlaybackStatusUpdate = async (status) => {
-		// if (status.didJustFinish) return handleUserResults("success");
-		// if (status.didJustFinish) return handleUserResults("story_complete");
-		// if (status.didJustFinish) console.log("Finished!!!!");
-
+		// If status.didJustFinish, do something...
 		setVideoStatus(status);
-		// console.log(videoStatus);
 	};
 
 	const handleChapterSuccess = () => {
@@ -182,11 +244,13 @@ const DanceScreen = ({ navigation }) => {
 
 	const handleQuitPressed = () => {
 		handlePlayVideoPlayback("pause");
+		setDelay(null);
 		setShowConfirmModal(true);
 	};
 
 	const handleCancelPressed = () => {
 		handlePlayVideoPlayback("play");
+		setDelay(1000);
 		setShowConfirmModal(false);
 	};
 
@@ -195,22 +259,23 @@ const DanceScreen = ({ navigation }) => {
 		return navigation.navigate(routes.home.STORY);
 	};
 
-	const handleUserResults = (status) => {
+	const handleUserResults = async (status) => {
 		switch (status) {
 			case "success":
+				await handleUnloadVideo();
 				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 					data: { success: true },
 				});
 				break;
 			case "failed":
+				await handleUnloadVideo();
 				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 					data: { success: false },
 				});
 				break;
 			case "story_complete":
-				navigation.navigate(routes.home.STORY_FINISHED_SCREEN, {
-					data: { success: null },
-				});
+				await handleUnloadVideo();
+				navigation.navigate(routes.home.STORY_FINISHED_SCREEN);
 				break;
 			default:
 				return;
@@ -225,21 +290,22 @@ const DanceScreen = ({ navigation }) => {
 					onConfirmClicked={handleQuitDance}
 				/>
 			)}
+			<Loader visible={videoLoading} message="Setting up your dance session" />
 			<ScreenContainer backgroundColor={COLORS.dark}>
 				<Container>
-					<PageHeaderSmall title="AJ's Big FIGHT // CHAPTER 1" />
+					<PageHeaderSmall title={`${storyTitle} // CHAPTER 1`} />
 					<FlexSpacer />
 					<BottomSection>
 						<StepMinuteContainer>
-							<MessageText>{TARGET_BODY_MOVEMENTS} steps</MessageText>
+							<MessageText>{targetBodyMoves} MVTs</MessageText>
 							<OneStarElement width={60} />
 							<MessageText>
-								{minutes} / {minutes} mins
+								{minutes} / {targetMinutes} mins
 							</MessageText>
 						</StepMinuteContainer>
 						<StatusContainer>
 							<InstructionTextWhite>Your body movements</InstructionTextWhite>
-							<NumberText>{bodyMovementCount}</NumberText>
+							<NumberText>{calculateActualSteps(count)}</NumberText>
 						</StatusContainer>
 						{/* <InstructionText>07:34 Minutes to go!</InstructionText> */}
 						<Spacer />
@@ -249,13 +315,14 @@ const DanceScreen = ({ navigation }) => {
 					<VideoContainer>
 						<Video
 							ref={videoRef}
-							source={require("../../../assets/video/story/chapter1/chapter1_intro.mp4")}
+							source={{ uri: videoUrl }}
 							style={styles.video}
 							resizeMode={Video.RESIZE_MODE_COVER}
 							onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
 							shouldPlay={true}
 							isLooping={true}
 							rate={2}
+							onLoadStart={() => setVideoLoading(false)}
 						/>
 					</VideoContainer>
 				</Container>

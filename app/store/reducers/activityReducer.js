@@ -23,13 +23,14 @@ const performanceSlice = createSlice({
 		},
 		updateUserDailyActivity(state, { payload }) {
 			const { caloriesBurned, bodyMoves } = payload;
+			console.log("About to update body moves", bodyMoves);
 			state.dailyActivity = {
 				caloriesBurned: (state.dailyActivity.caloriesBurned += caloriesBurned),
 				bodyMoves: (state.dailyActivity.bodyMoves += bodyMoves),
 			};
 		},
 		setTotalUserActivity(state, { payload }) {
-			console.log("Total Activity Payload", payload);
+			// console.log("Total Activity Payload", payload);
 			const {
 				totalBodyMoves,
 				totalCaloriesBurned,

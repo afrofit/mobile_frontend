@@ -2,6 +2,8 @@ import * as React from "react";
 import * as Linking from "expo-linking";
 import styled from "styled-components/native";
 import { Platform } from "react-native";
+import { useSelector } from "react-redux";
+import useAsyncEffect from "use-async-effect";
 
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
@@ -13,6 +15,12 @@ import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
 import { MIXCLOUD_URL } from "../../../config/config";
+import {
+	getCurrentStory,
+	getCurrentStoryChapter,
+} from "../../../store/reducers/contentReducer";
+import { calculateDanceDuration } from "../../../utilities/calculators";
+import useAudio from "../../../hooks/useAudio";
 
 const Container = styled.View`
 	height: 100%;
@@ -70,25 +78,56 @@ const InstructionTextWhite = styled(InstructionText)`
 const Touchable = styled.Pressable``;
 
 const ChapterScreen = ({ navigation }) => {
+	const currentStory = useSelector(getCurrentStory);
+	const currentChapter = useSelector(getCurrentStoryChapter);
+
+	const { handleUnloadSound, handlePlayback } = useAudio(
+		currentChapter.audioUrl
+	);
+
+	useAsyncEffect(async () => {
+		console.log("CurrentChapter", currentChapter);
+		console.log("Current Story", currentStory);
+
+		if (currentChapter) {
+			await handlePlayback();
+		}
+	}, []);
+
 	const selectMusicMix = () => {
 		Linking.openURL(MIXCLOUD_URL);
 	};
 
 	const minimizeApp = () => {
 		if (Platform.OS === "ios") return Linking.openURL("music://");
-		console.log("Na android");
+	};
+
+	const handleGoBack = async () => {
+		await handleUnloadSound();
+		navigation.goBack();
+	};
+
+	const handleStartDance = async () => {
+		await handleUnloadSound();
+		navigation.navigate(routes.home.DANCE, {
+			storyTitle: currentStory.title,
+		});
 	};
 
 	return (
 		<ScreenContainer backgroundColor={COLORS.dark}>
 			<Container>
-				<PageHeaderSmall title="AJ's Big FIGHT // CHAPTER 1" />
+				<PageHeaderSmall
+					title={`${currentStory.title} // CHAPTER ${currentChapter.chapterOrder}`}
+				/>
 				<MidSection>
 					<ThreeStarsElement variant="gray" />
+					<MessageText>{currentChapter.instruction}</MessageText>
 					<MessageText>
-						you must complete 15000 dance steps to help aj lose 2.5kg
+						You've got{" "}
+						{calculateDanceDuration(currentChapter.targetBodyMoves, "minutes")}{" "}
+						Minutes to finish!
 					</MessageText>
-					<MessageText>YOu've got 30 Minutes to finish!</MessageText>
 					<MessageText>Ready?</MessageText>
 					<ThreeStarsElement variant="gray" />
 				</MidSection>
@@ -105,12 +144,9 @@ const ChapterScreen = ({ navigation }) => {
 					</Touchable>
 				</BottomSection>
 				<Spacer />
-				<Button
-					text="Dance now"
-					onPress={() => navigation.navigate(routes.home.DANCE)}
-				/>
+				<Button text="Dance now" onPress={handleStartDance} />
 				<Spacer />
-				<ClearButton text="Quit Activity" onPress={() => navigation.goBack()} />
+				<ClearButton text="Quit Activity" onPress={handleGoBack} />
 			</Container>
 		</ScreenContainer>
 	);

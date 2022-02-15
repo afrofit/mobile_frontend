@@ -23,7 +23,6 @@ const StoryListSection = ({ triggerNavigate, stories }) => {
 			return (
 				stories.length &&
 				stories.map((story) => {
-					console.log("From storylistsection", story);
 					return (
 						<StoryCard
 							key={story.contentStoryId}

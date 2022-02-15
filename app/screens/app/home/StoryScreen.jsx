@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import BackButton from "../../../components/buttons/BackButton";
 import Button from "../../../components/buttons/Button";
@@ -8,7 +8,11 @@ import ChapterCard from "../../../components/cards/ChapterCard";
 import StoryScreenHeader from "../../../components/headers/StoryScreenHeader";
 import { ImageBackground } from "../../../components/ImageBackground";
 import Font from "../../../elements/Font";
-import { getCurrentStory } from "../../../store/reducers/contentReducer";
+import {
+	getCurrentStory,
+	getCurrentStoryChapters,
+	setCurrentChapter,
+} from "../../../store/reducers/contentReducer";
 
 import { COLORS } from "../../../theme/colors";
 import { DEVICE_WIDTH } from "../../../theme/globals";
@@ -29,11 +33,24 @@ const Scroller = styled.ScrollView`
 `;
 
 const StoryScreen = ({ navigation }) => {
+	const dispatch = useDispatch();
+
 	const currentStory = useSelector(getCurrentStory);
+	const currentChapters = useSelector(getCurrentStoryChapters);
+
+	React.useEffect(() => {
+		console.log("Current Chapters", currentChapters);
+	}, []);
 
 	const handleGoToRoot = () => {
 		navigation.navigate(routes.ROOT);
 	};
+
+	const handleGoToChapter = (chapterId) => {
+		dispatch(setCurrentChapter(chapterId));
+		navigation.navigate(routes.home.CHAPTER);
+	};
+
 	return (
 		<ScreenContainer backgroundColor={COLORS.dark}>
 			{/* <CancelButton onPress={() => console.log("Cancel Pressed!")} /> */}
@@ -47,15 +64,23 @@ const StoryScreen = ({ navigation }) => {
 						<BackButton left={20} top={20} onPress={handleGoToRoot} />
 					</StoryScreenHeader>
 					<Scroller showsVerticalScrollIndicator={false}>
-						{currentStory.chapters &&
-							currentStory.chapters.map((chapter, index) => (
-								<ChapterCard
-									key={chapter._key}
-									status="fresh"
-									number={index + 1}
-									onPress={() => navigation.navigate(routes.home.CHAPTER)}
-								/>
-							))}
+						{currentChapters &&
+							currentChapters.map((chapter) => {
+								const status =
+									chapter.timeSpentInMills <= 0 ? "fresh" : "dirty";
+								return (
+									<ChapterCard
+										key={chapter.contentChapterId}
+										status={status}
+										number={chapter.chapterOrder}
+										onPress={() => handleGoToChapter(chapter.contentChapterId)}
+										completed={chapter.completed}
+										bodyMoves={chapter.bodyMoves}
+										timeSpentInMillis={chapter.timeSpentInMillis}
+										targetBodyMoves={chapter.targetBodyMoves}
+									/>
+								);
+							})}
 						{/* <ChapterCard status="dirty" />
 						<ChapterCard status="finished" /> */}
 					</Scroller>

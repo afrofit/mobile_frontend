@@ -157,7 +157,7 @@ const HomeScreen = ({ navigation }) => {
 			}
 			return;
 		}
-		console.log("Stories", result.data);
+		// console.log("Stories", result.data);
 		setStories(result.data);
 	};
 

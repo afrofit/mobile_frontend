@@ -19,6 +19,8 @@ import Loader from "../../../components/Loader";
 import contentApi from "../../../api/content/contentApi";
 import {
 	getCurrentStory,
+	getCurrentStoryChapters,
+	setCurrentChapters,
 	setCurrentStory,
 	unsetCurrentStory,
 } from "../../../store/reducers/contentReducer";
@@ -79,6 +81,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	const { storyId } = route.params;
 	const [videoStatus, setVideoStatus] = React.useState();
 	const [videoLoading, setVideoLoading] = React.useState(true);
+	const [error, setError] = React.useState(null);
 
 	const dispatch = useDispatch();
 
@@ -100,8 +103,9 @@ const StoryIntroScreen = ({ navigation, route }) => {
 			}
 			return;
 		}
-		console.log("Current Story", result.data);
-		return dispatch(setCurrentStory(result.data));
+		// console.log("Current Story", result.data);
+		dispatch(setCurrentChapters(result.data.chapters));
+		return dispatch(setCurrentStory(result.data.story));
 	});
 
 	/*
@@ -133,13 +137,15 @@ const StoryIntroScreen = ({ navigation, route }) => {
 		// console.log(videoStatus);
 	};
 
-	const handleStartStory = () => {
-		handleUnloadVideo().then(() => navigation.navigate(routes.home.STORY));
+	const handleStartStory = async () => {
+		await handleUnloadVideo();
+		navigation.navigate(routes.home.STORY);
 	};
 
-	const handleGoBack = () => {
+	const handleGoBack = async () => {
+		await handleUnloadVideo();
 		dispatch(unsetCurrentStory());
-		return navigation.goBack();
+		navigation.goBack();
 	};
 
 	return (
@@ -159,7 +165,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 							<ThreeStarsElement />
 							<Spacer />
 							<InstructionTextWhite>
-								{currentStory.description}
+								{currentStory.instruction}
 							</InstructionTextWhite>
 							<Spacer />
 							<ThreeStarsElement />
