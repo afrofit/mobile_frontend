@@ -4,6 +4,7 @@ import styled from "styled-components/native";
 import { Platform } from "react-native";
 import { useSelector } from "react-redux";
 import useAsyncEffect from "use-async-effect";
+import parseMillis from "parse-ms";
 
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
@@ -19,7 +20,6 @@ import {
 	getCurrentStory,
 	getCurrentStoryChapter,
 } from "../../../store/reducers/contentReducer";
-import { calculateDanceDuration } from "../../../utilities/calculators";
 import useAudio from "../../../hooks/useAudio";
 
 const Container = styled.View`
@@ -46,8 +46,6 @@ const MidSection = styled(PageSection)`
 const BottomSection = styled(PageSection)`
 	padding-top: 20px;
 	padding-bottom: 20px;
-	/* margin-top: 20%; */
-	/* background-color: red; */
 `;
 
 const Font = styled.Text`
@@ -114,6 +112,8 @@ const ChapterScreen = ({ navigation }) => {
 		});
 	};
 
+	const { minutes } = parseMillis(currentChapter.targetTimeInMillis);
+
 	return (
 		<ScreenContainer backgroundColor={COLORS.dark}>
 			<Container>
@@ -123,11 +123,7 @@ const ChapterScreen = ({ navigation }) => {
 				<MidSection>
 					<ThreeStarsElement variant="gray" />
 					<MessageText>{currentChapter.instruction}</MessageText>
-					<MessageText>
-						You've got{" "}
-						{calculateDanceDuration(currentChapter.targetBodyMoves, "minutes")}{" "}
-						Minutes to finish!
-					</MessageText>
+					<MessageText>You've got {minutes} Minutes to finish!</MessageText>
 					<MessageText>Ready?</MessageText>
 					<ThreeStarsElement variant="gray" />
 				</MidSection>

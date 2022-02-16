@@ -1,5 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchUserActivity } from "../../api/activity/activityThunkControllers";
+import {
+	fetchUserActivity,
+	saveUserActivity,
+} from "../../api/activity/activityThunkControllers";
 
 const initialState = {
 	dailyActivity: {
@@ -29,7 +32,7 @@ const performanceSlice = createSlice({
 				bodyMoves: (state.dailyActivity.bodyMoves += bodyMoves),
 			};
 		},
-		setTotalUserActivity(state, { payload }) {
+		initializeTotalUserActivity(state, { payload }) {
 			// console.log("Total Activity Payload", payload);
 			const {
 				totalBodyMoves,
@@ -43,6 +46,12 @@ const performanceSlice = createSlice({
 				totalTimeDancedInMilliseconds,
 				totalDaysActive,
 			};
+		},
+		updateTotalUserActivity(state, { payload }) {
+			state.userStats.totalBodyMoves += payload.totalBodyMoves;
+			state.userStats.totalCaloriesBurned += payload.totalCaloriesBurned;
+			state.userStats.totalTimeDancedInMilliseconds += payload.totalDaysActive;
+			state.userStats.totalDaysActive += payload.totalTimeDancedInMilliseconds;
 		},
 		resetUserDailyActivity(state) {
 			state.dailyActivity = { caloriesBurned: 0, bodyMoves: 0 };
@@ -61,7 +70,7 @@ const performanceSlice = createSlice({
 export const {
 	setUserDailyActivity,
 	updateUserDailyActivity,
-	setTotalUserActivity,
+	initializeTotalUserActivity,
 	resetUserDailyActivity,
 } = performanceSlice.actions;
 
@@ -73,7 +82,6 @@ export const getPerformanceData = (state) => state.activity.userStats;
 export function requestUserDailyActivity() {
 	return (dispatch, getState) => {
 		fetchUserActivity().then((response) => {
-			// console.log("DailyActivity Response from Thunk", response);
 			if (response) {
 				const { daily, performance } = response;
 				const { bodyMoves, caloriesBurned } = daily;
@@ -90,7 +98,7 @@ export function requestUserDailyActivity() {
 					})
 				);
 				return dispatch(
-					setTotalUserActivity({
+					initializeTotalUserActivity({
 						totalCaloriesBurned,
 						totalBodyMoves,
 						totalTimeDancedInMilliseconds,
@@ -103,8 +111,15 @@ export function requestUserDailyActivity() {
 	};
 }
 
-export function saveUserDailyActivity() {
-	return (_, getState) => {};
+export function saveUserActivityData(payload) {
+	return () => {
+		saveUserActivity(payload)
+			.then((res) => {
+				//do something here\
+				// console.log("Activity Response from Thunk", res);
+			})
+			.catch((error) => console.error(error));
+	};
 }
 
 /**Reducer */

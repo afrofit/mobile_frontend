@@ -47,7 +47,7 @@ export const { setSubscription, resetSubscription } = subscriptionSlice.actions;
 export function requestCurrentUserSubscription() {
 	return (dispatch, getState) => {
 		fetchCurrentUserSubscription().then((response) => {
-			console.log("Subscription Response from Thunk", response);
+			// console.log("Subscription Response from Thunk", response);
 			// const currentState = getState();
 			// if (currentState.subscription.subscription.name === UNSUBSCRIBED){
 

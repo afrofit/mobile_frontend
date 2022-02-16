@@ -78,7 +78,7 @@ const InstructionTextWhite = styled(InstructionText)`
 `;
 
 const StoryIntroScreen = ({ navigation, route }) => {
-	const { storyId } = route.params;
+	const { contentStoryId } = route.params;
 	const [videoStatus, setVideoStatus] = React.useState();
 	const [videoLoading, setVideoLoading] = React.useState(true);
 	const [error, setError] = React.useState(null);
@@ -92,8 +92,8 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	 */
 	const getStoryDetailApi = useApi(contentApi.getStoryDetails);
 
-	const getStoryDetails = React.useCallback(async (storyId) => {
-		const result = await getStoryDetailApi.request(storyId);
+	const getStoryDetails = React.useCallback(async (contentStoryId) => {
+		const result = await getStoryDetailApi.request(contentStoryId);
 
 		if (!result.ok) {
 			if (result.data) {
@@ -103,7 +103,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 			}
 			return;
 		}
-		// console.log("Current Story", result.data);
+		console.log("Current Story", result.data);
 		dispatch(setCurrentChapters(result.data.chapters));
 		return dispatch(setCurrentStory(result.data.story));
 	});
@@ -121,8 +121,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	/**Effects */
 
 	React.useEffect(() => {
-		// console.log("Current Story", currentStory && currentStory.title);
-		getStoryDetails(storyId);
+		getStoryDetails(contentStoryId);
 	}, []);
 
 	/*

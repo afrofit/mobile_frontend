@@ -21,14 +21,19 @@ import useVideo from "../../../hooks/useVideo";
 import VideoContainer from "../../../utilities/VideoContainer";
 import useBodyMovements from "../../../hooks/useBodyMovements";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUserDailyActivity } from "../../../store/reducers/activityReducer";
+import {
+	saveUserActivityData,
+	updateUserDailyActivity,
+} from "../../../store/reducers/activityReducer";
 import useAudioAnnouncer from "../../../hooks/useAudioAnnouncer";
 import useInterval from "../../../hooks/useInteval";
 import Loader from "../../../components/Loader";
-import { getCurrentStoryChapter } from "../../../store/reducers/contentReducer";
+import {
+	getCurrentStoryChapter,
+	getCurrentStoryChapters,
+} from "../../../store/reducers/contentReducer";
 import {
 	calculateActualSteps,
-	calculateTargetSteps,
 	calculateTargetTime,
 } from "../../../utilities/calculators";
 
@@ -98,6 +103,7 @@ const DanceScreen = ({ navigation, route }) => {
 	const dispatch = useDispatch();
 
 	const currentChapter = useSelector(getCurrentStoryChapter);
+	const currentChapters = useSelector(getCurrentStoryChapters);
 
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 	const [videoStatus, setVideoStatus] = React.useState();
@@ -106,6 +112,8 @@ const DanceScreen = ({ navigation, route }) => {
 	const [delay, setDelay] = React.useState(1000);
 	const [timeDanced, setTimeDanced] = React.useState(timeSpentInMillis || 0);
 
+	const [sessionOn, setSessionOn] = React.useState(true);
+
 	const videoRef = React.useRef(null);
 
 	const { handleUnloadVideo, handlePlayVideoPlayback } = useVideo(
@@ -113,22 +121,23 @@ const DanceScreen = ({ navigation, route }) => {
 		videoStatus
 	);
 
-	const { timeSpentInMillis, targetTimeInMillis, targetBodyMoves, videoUrl } =
-		currentChapter;
+	const {
+		timeSpentInMillis,
+		targetTimeInMillis,
+		targetBodyMoves,
+		videoUrl,
+		chapterOrder,
+		contentStoryId,
+		contentChapterId,
+	} = currentChapter;
 
 	const { bodyMovementCount, setBodyMovementCount, startMoving, stopMoving } =
 		useBodyMovements();
 
 	const { handleAnnouncement } = useAudioAnnouncer();
 
-	// This should be passed in as props
-	const TARGET_BODY_MOVEMENTS = 50;
 	const CAL_BURN_RATE_PER_MOVE = 0.00175;
-	const TARGET_DANCE_TIME_MS = 1000 * 60 * 50; // 50 minutes
-	const TIME_DANCED = 1000 * 60 * 10; // 10 Minutes
-	const ONE_SECOND = 60000;
 
-	// console.log(parseMillis(TARGET_DANCE_TIME_MS));
 	const {
 		hours: targetHours,
 		minutes: targetMinutes,
@@ -136,110 +145,178 @@ const DanceScreen = ({ navigation, route }) => {
 	} = parseMillis(calculateTargetTime(targetBodyMoves));
 	const { hours, minutes, seconds } = parseMillis(timeDanced);
 
-	/**Effects */
 	useInterval(() => {
-		setCount(count + 1);
+		setCount(count + 3); // change back to 1
 	}, delay);
 
 	useInterval(() => {
 		setTimeDanced(timeDanced + 1000);
 	}, delay);
 
-	const realStepsCount = calculateActualSteps(count);
+	const REAL_STEP_COUNT = calculateActualSteps(count);
+
+	/**  Disable Back Button */
+	const { backDisabled } = useDisableHardwareBack();
+	useFocusEffect(backDisabled());
+
+	/** Effects */
+
+	React.useEffect(() => {
+		if (timeDanced < targetTimeInMillis) return setSessionOn(true);
+		else if (timeDanced === targetTimeInMillis) return setSessionOn(false);
+	}, [timeDanced]);
 
 	useAsyncEffect(async () => {
-		if (realStepsCount === 50) {
+		console.log("Session status:", sessionOn, REAL_STEP_COUNT);
+		if (sessionOn) {
+			if (REAL_STEP_COUNT < targetBodyMoves) {
+				console.log("There's still time for this session");
+			} else if (REAL_STEP_COUNT === targetBodyMoves) {
+				console.log("You've successfully finished");
+				setSessionOn(false);
+				setDelay(null);
+			}
+			if (chapterOrder < currentChapters.length) {
+				console.log("This is NOT the last chapter!");
+				// send users to chapter_success
+				await handleSaveActivity();
+				return handleUserResults("story_complete");
+			} else {
+				console.log("This is the last chapter!");
+				// send users to story_complete
+				await handleSaveActivity();
+				return handleUserResults("success");
+			}
+		} else if (!sessionOn) {
+			console.log("Session has ended!");
+			// send users to chapter_failed
+		}
+	}, [timeDanced, sessionOn]);
+
+	useAsyncEffect(async () => {
+		if (REAL_STEP_COUNT === 50) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_50);
 		}
-		if (realStepsCount === 100) {
+		if (REAL_STEP_COUNT === 100) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_100);
 		}
-		if (realStepsCount === 200) {
+		if (REAL_STEP_COUNT === 200) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_200);
 		}
-		if (realStepsCount === targetBodyMoves - 200) {
+		if (REAL_STEP_COUNT === targetBodyMoves - 200) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_200);
 		}
-		if (realStepsCount === targetBodyMoves - 100) {
+		if (REAL_STEP_COUNT === targetBodyMoves - 100) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_100);
 		}
-		if (realStepsCount === targetBodyMoves - 50) {
+		if (REAL_STEP_COUNT === targetBodyMoves - 50) {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_50);
 		}
 
 		if (targetBodyMoves > 1200 && targetBodyMoves < 1500) {
-			if (realStepsCount === 500) {
+			if (REAL_STEP_COUNT === 500) {
 				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_200);
 			}
 		}
 		if (targetBodyMoves > 1501 && targetBodyMoves < 2300) {
-			if (realStepsCount === 500) {
+			if (REAL_STEP_COUNT === 500) {
 				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_500);
 			}
-			if (realStepsCount === 1000) {
+			if (REAL_STEP_COUNT === 1000) {
 				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
 			}
 		}
 		if (targetBodyMoves > 2301 && targetBodyMoves < 2500) {
-			if (realStepsCount === 1000) {
+			if (REAL_STEP_COUNT === 1000) {
 				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
 			}
-			if (realStepsCount === 2000) {
+			if (REAL_STEP_COUNT === 2000) {
 				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_2000);
 			}
 		}
-	}, [realStepsCount]);
+	}, [REAL_STEP_COUNT]);
 
 	React.useEffect(() => {
 		startMoving();
 		return () => {
-			return stopMoving();
+			stopMoving();
 		};
 	}, []);
 
-	React.useEffect(() => {
-		return TARGET_BODY_MOVEMENTS <= bodyMovementCount
-			? handleUserResults("story_complete")
-			: "null";
-	}, [bodyMovementCount]);
-
-	React.useEffect(() => {
-		const realBodyMovementCount = bodyMovementCount / 3;
-		const payload = {
-			bodyMoves: Math.floor(realBodyMovementCount),
-			caloriesBurned: CAL_BURN_RATE_PER_MOVE * realBodyMovementCount,
-			totalTimeDancedInMilliseconds: TIME_DANCED,
-		};
-		console.log("Payload", payload.bodyMoves);
-		console.log("Body Movement Count", bodyMovementCount);
-		if (bodyMovementCount === 50) {
-			return dispatch(updateUserDailyActivity(payload));
+	const checkUserPerformance = async () => {
+		if (
+			timeDanced >= targetTimeInMillis / 4 &&
+			timeDanced <= targetTimeInMillis / 2
+		) {
+			//Has the user gone past 25%?
+			const payload = {
+				bodyMoves: count,
+				chapterStarted: true,
+				totalTimeDancedInMilliseconds: timeDanced,
+				chapterCompleted: false,
+				caloriesBurned: CAL_BURN_RATE_PER_MOVE * count,
+				contentStoryId: contentStoryId,
+				contentChapterId: contentChapterId,
+			};
+			return handleSaveActivity(payload);
+		} else if (
+			timeDanced > targetTimeInMillis / 2 &&
+			timeDanced <= targetTimeInMillis * 0.75
+		) {
+			//Has the user gone past 50%?
+			const payload = {};
+			return handleSaveActivity(payload);
+		} else if (
+			timeDanced > targetTimeInMillis * 0.75 &&
+			timeDanced <= targetTimeInMillis
+		) {
+			//Has the user gone past 75%
+			const payload = {};
+			return handleSaveActivity(payload);
 		}
-	}, [bodyMovementCount]);
+	};
 
-	// Disable Back Button
-	const { backDisabled } = useDisableHardwareBack();
-	useFocusEffect(backDisabled());
+	const handleSaveActivity = async () => {
+		const activityPayload = {
+			bodyMoves: count,
+			caloriesBurned: CAL_BURN_RATE_PER_MOVE * count,
+			totalTimeDancedInMilliseconds: timeDanced,
+		};
 
-	/*
-	 *Video monitoring functions
-	 */
+		const payload = {
+			bodyMoves: count,
+			chapterStarted: true,
+			totalTimeDancedInMilliseconds: timeDanced,
+			chapterCompleted: false,
+			caloriesBurned: CAL_BURN_RATE_PER_MOVE * count,
+			contentStoryId: currentChapter.contentStoryId,
+			contentChapterId: currentChapter.contentChapterId,
+		};
+
+		console.log("Payloads", activityPayload, payload);
+
+		dispatch(updateUserDailyActivity(activityPayload));
+		dispatch(saveUserActivityData(payload));
+
+		return;
+		// Save to DB after
+		// Save PlayedChapter, PlayedStory, UserPerformance, UserDailyActivity
+		// the return statement will bring back data to put in the stores
+		// especially activedays
+	};
+
+	/** End Save User Activity to Store && DB */
+
+	/**Video monitoring functions */
 
 	const _onPlaybackStatusUpdate = async (status) => {
 		// If status.didJustFinish, do something...
 		setVideoStatus(status);
 	};
 
-	const handleChapterSuccess = () => {
-		console.log(
-			"Body Movement Count",
-			bodyMovementCount,
-			"Target: ",
-			TARGET_BODY_MOVEMENTS
-		);
-		if (TARGET_BODY_MOVEMENTS === bodyMovementCount)
-			return handleUserResults("success");
-		return;
+	const handleLoadVideo = () => {
+		setVideoLoading(false);
+		setSessionOn(true);
 	};
 
 	const handleQuitPressed = () => {
@@ -254,8 +331,10 @@ const DanceScreen = ({ navigation, route }) => {
 		setShowConfirmModal(false);
 	};
 
-	const handleQuitDance = () => {
-		handleUnloadVideo().then(() => setShowConfirmModal(false));
+	const handleQuitDance = async () => {
+		await handleUnloadVideo();
+		setShowConfirmModal(false);
+		// await handleSaveActivity();
 		return navigation.navigate(routes.home.STORY);
 	};
 
@@ -322,7 +401,7 @@ const DanceScreen = ({ navigation, route }) => {
 							shouldPlay={true}
 							isLooping={true}
 							rate={2}
-							onLoadStart={() => setVideoLoading(false)}
+							onLoadStart={handleLoadVideo}
 						/>
 					</VideoContainer>
 				</Container>

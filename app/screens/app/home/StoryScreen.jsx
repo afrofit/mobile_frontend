@@ -81,8 +81,6 @@ const StoryScreen = ({ navigation }) => {
 									/>
 								);
 							})}
-						{/* <ChapterCard status="dirty" />
-						<ChapterCard status="finished" /> */}
 					</Scroller>
 				</Container>
 			)}

@@ -79,20 +79,20 @@ const HomeScreen = ({ navigation }) => {
 	 */
 
 	// Might have to do away with this logic fetch subscription from server direct
-	const checkSubscriptionStatus = (storyId) => {
+	const checkSubscriptionStatus = (contentStoryId) => {
 		// Check for subscription
 		if (currentSubscription.isExpired)
 			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-		return triggerNavigate(storyId);
+		return triggerNavigate(contentStoryId);
 	};
 
 	/*
 	 * Navigation logic
 	 */
 
-	const triggerNavigate = (storyId) => {
+	const triggerNavigate = (contentStoryId) => {
 		// console.log("Story Id, Homescreen", storyId);
-		navigation.navigate(routes.home.STORY_INTRO, { storyId });
+		navigation.navigate(routes.home.STORY_INTRO, { contentStoryId });
 		// navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 		// 	data: { success: true },
 		// });
