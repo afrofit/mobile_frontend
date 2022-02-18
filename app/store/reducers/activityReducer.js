@@ -116,7 +116,8 @@ export function saveUserActivityData(payload) {
 			.then((response) => {
 				// console.log("Activity response from Thunk", res);
 				const { chapter, daily, story, performance } = response;
-				console.log("Story from Thunk", story);
+				// console.log("Story from Thunk", story);
+				console.log("For upstreaming...");
 				const {
 					totalCaloriesBurned,
 					totalBodyMoves,

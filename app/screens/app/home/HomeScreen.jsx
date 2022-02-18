@@ -32,32 +32,25 @@ import ScreenContainer from "../../../utilities/ScreenContainer";
 const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 
-	/*
-	 * use Selectors to grab data from Redux Store
-	 */
+	/** use Selectors to grab data from Redux Store */
 
 	const currentUser = useSelector(getCurrentUser);
 	const currentSubscription = useSelector(getCurrentUserSubscription);
 	const todaysActivity = useSelector(getDailyActivity);
 
-	/*
-	 * Fetch relevant data from selectors
-	 */
+	/** Fetch relevant data from selectors */
 
 	const { username, hasTrial } = currentUser;
 	const { caloriesBurned, bodyMoves } = todaysActivity;
-	/*
-	 *useState for errors, modals etc
-	 */
+
+	/** useState for errors, modals etc */
 
 	const [error, setError] = React.useState();
 	const [stories, setStories] = React.useState([]);
 
 	const [showTrialModal, setShowTrialModal] = React.useState(false);
 
-	/*
-	 *Create Subscription API flow here
-	 */
+	/**Create Subscription API flow here */
 
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
 	const fetchStoriesApi = useApi(contentApi.getStories);
@@ -80,9 +73,7 @@ const HomeScreen = ({ navigation }) => {
 		fetchAllStories();
 	}, []);
 
-	/*
-	 * General functions
-	 */
+	/** General functions */
 
 	// Might have to do away with this logic fetch subscription from server direct
 	const checkSubscriptionStatus = (contentStoryId) => {
@@ -91,17 +82,13 @@ const HomeScreen = ({ navigation }) => {
 		return triggerNavigate(contentStoryId);
 	};
 
-	/*
-	 * Navigation logic
-	 */
+	/** Navigation logic */
 
 	const triggerNavigate = (contentStoryId) => {
 		navigation.navigate(routes.home.STORY_INTRO, { contentStoryId });
 	};
 
-	/*
-	 *Create Subscription Flow
-	 */
+	/**Create Subscription Flow */
 
 	const handleCreateSubscription = async (value) => {
 		switch (value) {
