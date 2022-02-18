@@ -49,48 +49,41 @@ const ChapterFont = styled(StatusFont)`
 	margin-bottom: 5px;
 `;
 
-const ChapterCard = ({
-	status = "fresh",
-	onPress,
-	number = 0,
-	completed,
-	bodyMoves,
-	timeSpentInMillis,
-	targetBodyMoves,
-}) => {
-	const color =
-		status === "fresh"
-			? COLORS.red
-			: status === "dirty"
-			? COLORS.yellow
-			: COLORS.grayDarker;
-
-	const TARGET_TIME = calculateDanceDuration(targetBodyMoves, "millis");
-	const PERCENTAGE_COMPLETE = calculatePercentageCompleted(
-		timeSpentInMillis,
-		TARGET_TIME
-	);
-	console.log("TARGET_TIME", TARGET_TIME, timeSpentInMillis);
+const ChapterCard = ({ onPress, number = 0, bodyMoves, targetBodyMoves }) => {
 	return (
 		<Container onPress={onPress}>
 			<Top>
 				<ChapterFont>Play Chapter {number}</ChapterFont>
 			</Top>
-			{completed && (
-				<Bottom color={color}>
-					<StatusFont>Finished</StatusFont>
-				</Bottom>
-			)}
-			{!completed && (
-				<Bottom color={color}>
-					<StatusFont>
-						{PERCENTAGE_COMPLETE > 0
-							? `${PERCENTAGE_COMPLETE}%`
-							: "NOT STARTED"}
-					</StatusFont>
-				</Bottom>
-			)}
+			<BottomPartOfCard
+				bodyMoves={bodyMoves}
+				targetBodyMoves={targetBodyMoves}
+			/>
 		</Container>
+	);
+};
+
+const BottomPartOfCard = ({ bodyMoves, targetBodyMoves }) => {
+	const generateBackgroundColor = React.useCallback(() => {
+		if (bodyMoves === 0) return COLORS.yellow;
+		else if (bodyMoves > 0 && bodyMoves < targetBodyMoves) return COLORS.bronze;
+		return COLORS.grayDarker;
+	}, [bodyMoves, targetBodyMoves]);
+
+	const PERCENTAGE_COMPLETE = React.useCallback(
+		calculatePercentageCompleted(bodyMoves, targetBodyMoves),
+		[bodyMoves, targetBodyMoves]
+	);
+	return (
+		<>
+			<Bottom color={generateBackgroundColor}>
+				{bodyMoves === targetBodyMoves && <StatusFont>Finished</StatusFont>}
+				{bodyMoves === 0 && <StatusFont>Fresh</StatusFont>}
+				{bodyMoves > 0 && bodyMoves < targetBodyMoves && (
+					<StatusFont>{`${PERCENTAGE_COMPLETE}% COMPLETE`}</StatusFont>
+				)}
+			</Bottom>
+		</>
 	);
 };
 

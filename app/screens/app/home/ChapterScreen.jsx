@@ -84,8 +84,8 @@ const ChapterScreen = ({ navigation }) => {
 	);
 
 	useAsyncEffect(async () => {
-		console.log("CurrentChapter", currentChapter);
-		console.log("Current Story", currentStory);
+		// console.log("CurrentChapter", currentChapter);
+		// console.log("Current Story", currentStory);
 
 		if (currentChapter) {
 			await handlePlayback();

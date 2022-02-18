@@ -3,6 +3,7 @@ import {
 	fetchUserActivity,
 	saveUserActivity,
 } from "../../api/activity/activityThunkControllers";
+import { updateCurrentChapter, updateCurrentChapters } from "./contentReducer";
 
 const initialState = {
 	dailyActivity: {
@@ -26,14 +27,12 @@ const performanceSlice = createSlice({
 		},
 		updateUserDailyActivity(state, { payload }) {
 			const { caloriesBurned, bodyMoves } = payload;
-			console.log("About to update body moves", bodyMoves);
 			state.dailyActivity = {
 				caloriesBurned: (state.dailyActivity.caloriesBurned += caloriesBurned),
 				bodyMoves: (state.dailyActivity.bodyMoves += bodyMoves),
 			};
 		},
 		initializeTotalUserActivity(state, { payload }) {
-			// console.log("Total Activity Payload", payload);
 			const {
 				totalBodyMoves,
 				totalCaloriesBurned,
@@ -80,7 +79,7 @@ export const getPerformanceData = (state) => state.activity.userStats;
 
 /**Thunks */
 export function requestUserDailyActivity() {
-	return (dispatch, getState) => {
+	return (dispatch) => {
 		fetchUserActivity().then((response) => {
 			if (response) {
 				const { daily, performance } = response;
@@ -112,11 +111,35 @@ export function requestUserDailyActivity() {
 }
 
 export function saveUserActivityData(payload) {
-	return () => {
+	return (dispatch) => {
 		saveUserActivity(payload)
-			.then((res) => {
-				//do something here\
-				// console.log("Activity Response from Thunk", res);
+			.then((response) => {
+				// console.log("Activity response from Thunk", res);
+				const { chapter, daily, story, performance } = response;
+				console.log("Story from Thunk", story);
+				const {
+					totalCaloriesBurned,
+					totalBodyMoves,
+					totalTimeDancedInMilliseconds,
+					totalDaysActive,
+				} = performance;
+				const { bodyMoves, caloriesBurned } = daily;
+				dispatch(updateCurrentChapters(payload));
+				dispatch(
+					initializeTotalUserActivity({
+						totalCaloriesBurned,
+						totalBodyMoves,
+						totalTimeDancedInMilliseconds,
+						totalDaysActive,
+					})
+				);
+				dispatch(
+					setUserDailyActivity({
+						bodyMoves,
+						caloriesBurned,
+					})
+				);
+				return dispatch(updateCurrentChapter(chapter));
 			})
 			.catch((error) => console.error(error));
 	};

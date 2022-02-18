@@ -38,10 +38,6 @@ const StoryScreen = ({ navigation }) => {
 	const currentStory = useSelector(getCurrentStory);
 	const currentChapters = useSelector(getCurrentStoryChapters);
 
-	React.useEffect(() => {
-		console.log("Current Chapters", currentChapters);
-	}, []);
-
 	const handleGoToRoot = () => {
 		navigation.navigate(routes.ROOT);
 	};
@@ -66,17 +62,12 @@ const StoryScreen = ({ navigation }) => {
 					<Scroller showsVerticalScrollIndicator={false}>
 						{currentChapters &&
 							currentChapters.map((chapter) => {
-								const status =
-									chapter.timeSpentInMills <= 0 ? "fresh" : "dirty";
 								return (
 									<ChapterCard
 										key={chapter.contentChapterId}
-										status={status}
 										number={chapter.chapterOrder}
 										onPress={() => handleGoToChapter(chapter.contentChapterId)}
-										completed={chapter.completed}
 										bodyMoves={chapter.bodyMoves}
-										timeSpentInMillis={chapter.timeSpentInMillis}
 										targetBodyMoves={chapter.targetBodyMoves}
 									/>
 								);

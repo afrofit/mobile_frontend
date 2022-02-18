@@ -21,6 +21,39 @@ const contentSlice = createSlice({
 				(chapter) => chapter.contentChapterId === payload
 			);
 		},
+		updateCurrentChapters(state, { payload }) {
+			if (payload) {
+				const currentChapters = state.currentChapters;
+
+				const filterQuery = payload.contentChapterId;
+
+				const chapterToUpdate = currentChapters.find(
+					(chapter) => chapter.contentChapterId === filterQuery
+				);
+
+				const updatedChapter = { ...chapterToUpdate, ...payload };
+
+				const remainingChapters = state.currentChapters.filter(
+					(chapter) => chapter.contentChapterId != filterQuery
+				);
+
+				const newArray = [...remainingChapters, updatedChapter].sort((a, b) =>
+					a.chapterOrder < b.chapterOrder
+						? -1
+						: Number(a.chapterOrder > b.chapterOrder)
+				);
+
+				state.currentChapters = newArray;
+			} else {
+				state.currentChapters = state.currentChapters;
+			}
+		},
+		updateCurrentChapter(state, { payload }) {
+			state.currentChapter = { ...state.currentChapter, ...payload };
+		},
+		updateCurrentStory(state, { payload }) {
+			state.currentStory = { ...state.currentStory, ...payload };
+		},
 		unsetCurrentStory(state, { payload }) {
 			state.currentStory = null;
 		},
@@ -37,6 +70,9 @@ export const {
 	setCurrentStory,
 	setCurrentChapter,
 	setCurrentChapters,
+	updateCurrentChapter,
+	updateCurrentChapters,
+	updateCurrentStory,
 	unsetCurrentStory,
 	unsetCurrentChapter,
 	unsetCurrentChapters,

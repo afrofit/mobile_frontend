@@ -7,6 +7,7 @@ import {
 	BORDER_RADIUS_SMALL,
 	MARGIN_VERTICAL,
 } from "../../theme/globals";
+import { calculatePercentageCompleted } from "../../utilities/calculators";
 import Spacer from "../../utilities/Spacer";
 
 //ImageBG
@@ -40,8 +41,36 @@ const TitleContainer = styled.View`
 
 const Touchable = styled.Pressable``;
 
-const StoryCard = ({ storyTitle, completed, started, onPress, source }) => {
-	const message = started && !completed ? "Started" : "Fresh";
+const StoryCard = ({
+	storyTitle,
+	completed,
+	started,
+	onPress,
+	source,
+	totalTargetBodyMoves,
+	totalBodyMoves,
+}) => {
+	// const message =
+	// 	started && completed
+	// 		? "Completed"
+	// 		: started && !completed
+	// 		? "Started"
+	// 		: "Fresh";
+	const generateMessage = () => {
+		if (started && completed) return "Completed";
+		else if (started && !completed) return `${calcPercent}% completed`;
+		else if (!started) return "Fresh";
+	};
+
+	const calcPercent = React.useCallback(
+		calculatePercentageCompleted(totalBodyMoves, totalTargetBodyMoves),
+		[totalBodyMoves, totalTargetBodyMoves]
+	);
+
+	const message = React.useCallback(generateMessage(), [
+		totalBodyMoves,
+		totalTargetBodyMoves,
+	]);
 
 	return (
 		<Touchable onPress={onPress}>

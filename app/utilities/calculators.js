@@ -21,7 +21,8 @@ export const calculateDanceDuration = (
 
 export const calculatePercentageCompleted = (partial, total) => {
 	if (partial > total) return null;
-	return (100 * partial) / total;
+	const result = (100 * partial) / total;
+	return Math.floor(result);
 };
 
 export const calculateTargetTime = (targetMoves) => {

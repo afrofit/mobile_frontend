@@ -12,6 +12,7 @@ import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
 import VideoContainer from "../../../utilities/VideoContainer";
 import useVideo from "../../../hooks/useVideo";
+import Loader from "../../../components/Loader";
 
 //This screen is where video intro of storyline is played. Very important!
 const Container = styled.View`
@@ -46,13 +47,6 @@ const Font = styled.Text`
 	text-align: center;
 `;
 
-const MessageText = styled(Font)`
-	font-family: "SemiBold";
-	font-size: 17px;
-	letter-spacing: 1.5px;
-	color: ${COLORS.white};
-`;
-
 const InstructionText = styled(Font)`
 	font-family: "Regular";
 	font-size: 13px;
@@ -65,11 +59,10 @@ const InstructionTextWhite = styled(InstructionText)`
 `;
 
 const FinishStoryScreen = ({ navigation, route }) => {
-	// const { success } = route.params.data;
-	const [videoStatus, setVideoStatus] = React.useState();
+	const { message, videoUrl } = route.params.data;
 
-	const message =
-		"You did it! I am the world champion. I can't believe this! You are amazing!";
+	const [videoStatus, setVideoStatus] = React.useState();
+	const [videoLoading, setVideoLoading] = React.useState(true);
 
 	const videoRef = React.useRef(null);
 
@@ -79,7 +72,6 @@ const FinishStoryScreen = ({ navigation, route }) => {
 		// if (status.didJustFinish) return handleUserResults("success");
 
 		setVideoStatus(status);
-		// console.log(videoStatus);
 	};
 
 	const handleFinishStory = () => {
@@ -87,39 +79,44 @@ const FinishStoryScreen = ({ navigation, route }) => {
 	};
 
 	return (
-		<ScreenContainer backgroundColor={COLORS.dark}>
-			<Container>
-				<Spacer />
-				<PageHeaderHuge title="Completed" />
-				<TopSection />
-				<MidSection>
-					<ThreeStarsElement />
-					<Spacer />
-					<InstructionTextWhite>{message}</InstructionTextWhite>
-					<Spacer />
-					<ThreeStarsElement />
-				</MidSection>
-				<Button
-					variant="white"
-					text={"Finish Story"}
-					onPress={handleFinishStory}
-				/>
+		<>
+			<Loader visible={videoLoading} message="Loading content" />
 
-				<Spacer />
-				<VideoContainer>
-					<Video
-						ref={videoRef}
-						source={require("../../../assets/video/story/chapter1/chapter1_intro.mp4")}
-						style={styles.video}
-						resizeMode={Video.RESIZE_MODE_COVER}
-						onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
-						shouldPlay={true}
-						isLooping={false}
-						rate={2}
+			<ScreenContainer backgroundColor={COLORS.dark}>
+				<Container>
+					<Spacer />
+					<PageHeaderHuge title="Completed" />
+					<TopSection />
+					<MidSection>
+						<ThreeStarsElement />
+						<Spacer />
+						<InstructionTextWhite>{message}</InstructionTextWhite>
+						<Spacer />
+						<ThreeStarsElement />
+					</MidSection>
+					<Button
+						variant="white"
+						text={"Finish Story"}
+						onPress={handleFinishStory}
 					/>
-				</VideoContainer>
-			</Container>
-		</ScreenContainer>
+
+					<Spacer />
+					<VideoContainer>
+						<Video
+							ref={videoRef}
+							source={{ uri: videoUrl }}
+							style={styles.video}
+							resizeMode={Video.RESIZE_MODE_COVER}
+							onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
+							shouldPlay={true}
+							isLooping={false}
+							rate={2}
+							onLoadStart={() => setVideoLoading(false)}
+						/>
+					</VideoContainer>
+				</Container>
+			</ScreenContainer>
+		</>
 	);
 };
 

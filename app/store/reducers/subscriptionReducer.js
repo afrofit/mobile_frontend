@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import subscriptionApi from "../../api/subscription/subscriptionApi";
 import { fetchCurrentUserSubscription } from "../../api/subscription/subscriptionThunkControllers";
-import useApi from "../../hooks/useApi";
 
 export const UNSUBSCRIBED = "unsubscribed";
 
@@ -45,14 +43,8 @@ export const { setSubscription, resetSubscription } = subscriptionSlice.actions;
 
 /* *Thunks */
 export function requestCurrentUserSubscription() {
-	return (dispatch, getState) => {
+	return (dispatch) => {
 		fetchCurrentUserSubscription().then((response) => {
-			// console.log("Subscription Response from Thunk", response);
-			// const currentState = getState();
-			// if (currentState.subscription.subscription.name === UNSUBSCRIBED){
-
-			// }
-			// if (reponse)
 			if (!response) {
 				return dispatch(resetSubscription(response));
 			}

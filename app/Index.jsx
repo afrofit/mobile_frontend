@@ -30,8 +30,6 @@ const Index = () => {
 		const currentUser = await restoreStoredCurrentUser();
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
-			dispatch(requestUserDailyActivity());
-			dispatch(requestCurrentUserSubscription());
 		}
 	}, []);
 

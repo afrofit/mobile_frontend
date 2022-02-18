@@ -31,6 +31,8 @@ const StoryListSection = ({ triggerNavigate, stories }) => {
 							onPress={() => triggerNavigate(story.contentStoryId)}
 							completed={story.completed}
 							started={story.started}
+							totalTargetBodyMoves={story.totalTargetBodyMoves}
+							totalBodyMoves={story.totalBodyMoves}
 						/>
 					);
 				})

@@ -19,13 +19,11 @@ import Loader from "../../../components/Loader";
 import contentApi from "../../../api/content/contentApi";
 import {
 	getCurrentStory,
-	getCurrentStoryChapters,
 	setCurrentChapters,
 	setCurrentStory,
 	unsetCurrentStory,
 } from "../../../store/reducers/contentReducer";
 
-//This screen is where video intro of storyline is played. Very important!
 const Container = styled.View`
 	height: 100%;
 	width: 100%;
@@ -51,12 +49,10 @@ const TopSection = styled.View`
 `;
 
 const MidSection = styled(PageSection)`
-	/* flex: 0.9; */
 	width: 90%;
 	justify-content: space-around;
 	padding-top: 30px;
 	padding-bottom: 30px;
-	/* background-color: blue; */
 `;
 
 const Font = styled.Text`
@@ -81,15 +77,14 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	const { contentStoryId } = route.params;
 	const [videoStatus, setVideoStatus] = React.useState();
 	const [videoLoading, setVideoLoading] = React.useState(true);
+	const [buttonDisabled, setButtonDisabled] = React.useState(true);
 	const [error, setError] = React.useState(null);
 
 	const dispatch = useDispatch();
 
 	const currentStory = useSelector(getCurrentStory);
 
-	/**
-	 * API Calls
-	 */
+	/** API Calls */
 	const getStoryDetailApi = useApi(contentApi.getStoryDetails);
 
 	const getStoryDetails = React.useCallback(async (contentStoryId) => {
@@ -103,18 +98,38 @@ const StoryIntroScreen = ({ navigation, route }) => {
 			}
 			return;
 		}
-		console.log("Current Story", result.data);
-		dispatch(setCurrentChapters(result.data.chapters));
-		return dispatch(setCurrentStory(result.data.story));
+
+		const { chapters, story } = result.data;
+
+		const sortedChapters = chapters.sort((a, b) =>
+			a.chapterOrder < b.chapterOrder
+				? -1
+				: Number(a.chapterOrder > b.chapterOrder)
+		);
+
+		// console.log(
+		// 	"Chapters",
+		// 	sortedChapters.map((chapter) => ({
+		// 		actualTargetBodyMoves: chapter.actualTargetBodyMoves,
+		// 		bodyMoves: chapter.bodyMoves,
+		// 		completed: chapter.completed,
+		// 		started: chapter.started,
+		// 		targetTimeInMillis: chapter.targetTimeInMillis,
+		// 		timeSpentInMillis: chapter.timeSpentInMillis,
+		// 	}))
+		// );
+
+		// console.log("Story", story);
+
+		dispatch(setCurrentChapters(sortedChapters));
+		return dispatch(setCurrentStory(story));
 	});
 
-	/*
-	 * Set up VideoRef
-	 */
+	/** Set up VideoRef */
 	const videoRef = React.useRef(null);
 	const { handleUnloadVideo } = useVideo(videoRef, videoStatus);
 
-	// Disable Back Button
+	/** Disable Back Button  */
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
 
@@ -124,9 +139,15 @@ const StoryIntroScreen = ({ navigation, route }) => {
 		getStoryDetails(contentStoryId);
 	}, []);
 
-	/*
-	 *Video monitoring functions
-	 */
+	React.useEffect(() => {
+		if (videoStatus) {
+			if (videoStatus.positionMillis >= 2000) {
+				setButtonDisabled(false);
+			}
+		}
+	}, [videoStatus]);
+
+	/**Video monitoring functions */
 
 	const _onPlaybackStatusUpdate = async (status) => {
 		if (status.didJustFinish) {
@@ -147,6 +168,13 @@ const StoryIntroScreen = ({ navigation, route }) => {
 		navigation.goBack();
 	};
 
+	const generateStartButtonText = () => {
+		if (!currentStory) return null;
+		if (currentStory.started && !currentStory.completed)
+			return "Continue Story";
+		else if (!currentStory.started) return "Start Story";
+	};
+
 	return (
 		<>
 			<Loader
@@ -156,9 +184,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 			<ScreenContainer backgroundColor={COLORS.dark}>
 				{currentStory && (
 					<Container>
-						<PageHeaderSmall
-							title={`${currentStory.title} // CHAPTER ${currentStory.storyOrderNumber}`}
-						/>
+						<PageHeaderSmall title={`${currentStory.title}`} />
 						<TopSection />
 						<MidSection>
 							<ThreeStarsElement />
@@ -171,16 +197,15 @@ const StoryIntroScreen = ({ navigation, route }) => {
 						</MidSection>
 						<Button
 							variant="white"
-							text="Start Story"
+							text={generateStartButtonText()}
 							onPress={handleStartStory}
-							disabled={videoStatus && videoStatus.positionMillis <= 5000}
+							disabled={buttonDisabled}
 						/>
 						<Button variant="red" text="Exit Story" onPress={handleGoBack} />
 						<Spacer />
 						<VideoContainer>
 							<Video
 								ref={videoRef}
-								// source={require("../../../assets/video/story/chapter1/chapter1_intro.mp4")}
 								source={{
 									uri: currentStory.introVideo,
 								}}
@@ -189,7 +214,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 								onPlaybackStatusUpdate={_onPlaybackStatusUpdate}
 								shouldPlay={true}
 								isLooping={false}
-								rate={2}
+								rate={1}
 								onLoadStart={() => setVideoLoading(false)}
 							/>
 						</VideoContainer>

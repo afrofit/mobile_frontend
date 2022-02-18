@@ -13,9 +13,13 @@ import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscr
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
-import { getDailyActivity } from "../../../store/reducers/activityReducer";
+import {
+	getDailyActivity,
+	requestUserDailyActivity,
+} from "../../../store/reducers/activityReducer";
 import {
 	getCurrentUserSubscription,
+	requestCurrentUserSubscription,
 	setSubscription,
 } from "../../../store/reducers/subscriptionReducer";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
@@ -71,7 +75,9 @@ const HomeScreen = ({ navigation }) => {
 
 	/**Effects */
 	React.useEffect(() => {
-		fetchStoriesSanity();
+		dispatch(requestUserDailyActivity());
+		dispatch(requestCurrentUserSubscription());
+		fetchAllStories();
 	}, []);
 
 	/*
@@ -80,7 +86,6 @@ const HomeScreen = ({ navigation }) => {
 
 	// Might have to do away with this logic fetch subscription from server direct
 	const checkSubscriptionStatus = (contentStoryId) => {
-		// Check for subscription
 		if (currentSubscription.isExpired)
 			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
 		return triggerNavigate(contentStoryId);
@@ -91,11 +96,7 @@ const HomeScreen = ({ navigation }) => {
 	 */
 
 	const triggerNavigate = (contentStoryId) => {
-		// console.log("Story Id, Homescreen", storyId);
 		navigation.navigate(routes.home.STORY_INTRO, { contentStoryId });
-		// navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
-		// 	data: { success: true },
-		// });
 	};
 
 	/*
@@ -146,7 +147,7 @@ const HomeScreen = ({ navigation }) => {
 		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
 	};
 
-	const fetchStoriesSanity = async () => {
+	const fetchAllStories = async () => {
 		const result = await fetchStoriesApi.request();
 
 		if (!result.ok) {
@@ -157,12 +158,30 @@ const HomeScreen = ({ navigation }) => {
 			}
 			return;
 		}
-		// console.log("Stories", result.data);
-		setStories(result.data);
+		const { data } = result;
+
+		const sortedStories = data.sort((a, b) =>
+			a.storyOrderNumber < b.storyOrderNumber
+				? -1
+				: Number(a.storyOrderNumber > b.storyOrderNumber)
+		);
+		// console.log(
+		// 	"Stories",
+		// 	sortedStories.map((story) => ({
+		// 		title: story.title,
+		// 		completed: story.completed,
+		// 		started: story.started,
+		// 		totalBodyMoves: story.totalBodyMoves,
+		// 		totalTargetActualBodyMoves: story.totalTargetActualBodyMoves,
+		// 		totalTargetBodyMoves: story.totalTargetBodyMoves,
+		// 		totalTargetUserTimeInMillis: story.totalTargetUserTimeInMillis,
+		// 		totalUserTimeSpentInMillis: story.totalUserTimeSpentInMillis,
+		// 	}))
+		// );
+		setStories(sortedStories);
 	};
 
 	const triggerCreateSubscription = async (value) => {
-		// console.log("Value", value);
 		const result = await createSubscriptionApi.request(value);
 
 		if (!result.ok) {
@@ -181,7 +200,6 @@ const HomeScreen = ({ navigation }) => {
 	return (
 		<>
 			<Loader
-				// visible={true}
 				visible={createSubscriptionApi.loading || fetchStoriesApi.loading}
 				message="Loading your content"
 			/>
@@ -215,7 +233,6 @@ const HomeScreen = ({ navigation }) => {
 			<ScreenContainer backgroundColor={COLORS.dark} noTouch={true}>
 				<FormErrorMessage error={error} />
 				<ContentContainer>
-					{/* <Spacer h="10px" /> */}
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />
 					<HomeStatsCard
 						calBurned={formatStatsNumbers(caloriesBurned)}
