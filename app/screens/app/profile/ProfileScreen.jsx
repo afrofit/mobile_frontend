@@ -2,6 +2,7 @@ import * as React from "react";
 import styled from "styled-components/native";
 import { StyleSheet } from "react-native";
 import { useDispatch } from "react-redux";
+import parseMillis from "parse-ms";
 
 import ProfileNameCard from "../../../components/cards/ProfileNameCard";
 import ProfileStatsCard from "../../../components/cards/ProfileStatsCard";
@@ -134,7 +135,7 @@ const ProfileScreen = ({}) => {
 	};
 
 	const triggerCreateSubscription = async (value) => {
-		console.log("Value", value);
+		// console.log("Value", value);
 		const result = await createSubscriptionApi.request(value);
 
 		if (!result.ok) {
@@ -161,9 +162,11 @@ const ProfileScreen = ({}) => {
 			}
 			return;
 		}
-		console.log("Subscription cancelled? ", result.data);
+		// console.log("Subscription cancelled? ", result.data);
 		dispatch(resetSubscription());
 	};
+
+	const { hours } = parseMillis(totalTimeDancedInMilliseconds);
 
 	return (
 		<>
@@ -212,8 +215,8 @@ const ProfileScreen = ({}) => {
 						<ProfileStatsCard
 							calBurned={formatStatsNumbers(totalCaloriesBurned)}
 							bodyMoves={formatStatsNumbers(totalBodyMoves)}
-							hoursDanced={formatStatsNumbers(totalTimeDancedInMilliseconds)}
-							daysActive={formatStatsNumbers(totalDaysActive)}
+							hoursDanced={hours}
+							daysActive={totalDaysActive}
 						/>
 						<ProfileSubscriptionCard
 							subscription={subscription}

@@ -66,7 +66,7 @@ const ProfileStatsCard = ({
 				</StatsBox>
 				<StatsBox>
 					<NumberText>{daysActive}</NumberText>
-					<LabelText>Days Active</LabelText>
+					<LabelText>{daysActive < 2 ? "Day Active" : "Days Active"}</LabelText>
 				</StatsBox>
 			</StatsLine>
 		</Card>

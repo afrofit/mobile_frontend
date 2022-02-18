@@ -51,20 +51,14 @@ const SmallCapsFont = styled(Font)`
 	color: ${COLORS.white};
 `;
 
-const SmallCapsFontYellow = styled(SmallCapsFont)`
-	color: ${COLORS.grayDarker};
-`;
-
-const StoryScreenHeader = ({ children }) => {
+const StoryScreenHeader = ({ children, title, imageUrl, completion }) => {
 	return (
-		<Background
-			source={require("../../assets/images/art/stories/cover_sample.jpg")}
-		>
+		<Background source={{ uri: imageUrl }}>
 			<ThreeStarsElement />
 			{children}
 			<TitleTag>
-				<Font>AJ's Big Fight</Font>
-				<SmallCapsFont>30% Complete</SmallCapsFont>
+				<Font>{title}</Font>
+				<SmallCapsFont>{completion}% Complete</SmallCapsFont>
 			</TitleTag>
 		</Background>
 	);

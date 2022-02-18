@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
-	fetchCurrentUserDailyActivity,
-	fetchCurrentUserPerformanceData,
+	fetchUserActivity,
+	saveUserActivity,
 } from "../../api/activity/activityThunkControllers";
+import { updateCurrentChapter, updateCurrentChapters } from "./contentReducer";
 
 const initialState = {
 	dailyActivity: {
@@ -31,8 +32,7 @@ const performanceSlice = createSlice({
 				bodyMoves: (state.dailyActivity.bodyMoves += bodyMoves),
 			};
 		},
-		setTotalUserActivity(state, { payload }) {
-			console.log("Total Activity Payload", payload);
+		initializeTotalUserActivity(state, { payload }) {
 			const {
 				totalBodyMoves,
 				totalCaloriesBurned,
@@ -46,8 +46,22 @@ const performanceSlice = createSlice({
 				totalDaysActive,
 			};
 		},
+		updateTotalUserActivity(state, { payload }) {
+			state.userStats.totalBodyMoves += payload.totalBodyMoves;
+			state.userStats.totalCaloriesBurned += payload.totalCaloriesBurned;
+			state.userStats.totalTimeDancedInMilliseconds += payload.totalDaysActive;
+			state.userStats.totalDaysActive += payload.totalTimeDancedInMilliseconds;
+		},
 		resetUserDailyActivity(state) {
 			state.dailyActivity = { caloriesBurned: 0, bodyMoves: 0 };
+		},
+		resetUserPerformance(state) {
+			state.userStats = {
+				totalCaloriesBurned: 0,
+				totalBodyMoves: 0,
+				totalTimeDancedInMilliseconds: 0,
+				totalDaysActive: 0,
+			};
 		},
 	},
 });
@@ -55,7 +69,7 @@ const performanceSlice = createSlice({
 export const {
 	setUserDailyActivity,
 	updateUserDailyActivity,
-	setTotalUserActivity,
+	initializeTotalUserActivity,
 	resetUserDailyActivity,
 } = performanceSlice.actions;
 
@@ -65,31 +79,69 @@ export const getPerformanceData = (state) => state.activity.userStats;
 
 /**Thunks */
 export function requestUserDailyActivity() {
-	return (dispatch, getState) => {
-		fetchCurrentUserDailyActivity().then((response) => {
-			// console.log("DailyActivity Response from Thunk", response);
-			const { bodyMoves, caloriesBurned } = response;
-			return dispatch(
-				setUserDailyActivity({
-					bodyMoves,
-					caloriesBurned,
-				})
-			);
-			// return dispatch(resetUserDailyActivity());
+	return (dispatch) => {
+		fetchUserActivity().then((response) => {
+			if (response) {
+				const { daily, performance } = response;
+				const { bodyMoves, caloriesBurned } = daily;
+				const {
+					totalCaloriesBurned,
+					totalBodyMoves,
+					totalTimeDancedInMilliseconds,
+					totalDaysActive,
+				} = performance;
+				dispatch(
+					setUserDailyActivity({
+						bodyMoves,
+						caloriesBurned,
+					})
+				);
+				return dispatch(
+					initializeTotalUserActivity({
+						totalCaloriesBurned,
+						totalBodyMoves,
+						totalTimeDancedInMilliseconds,
+						totalDaysActive,
+					})
+				);
+			}
+			return dispatch(resetUserDailyActivity());
 		});
 	};
 }
 
-export function saveUserDailyActivity() {
-	return (_, getState) => {};
-}
-
-export function requestUserPerformanceData() {
-	return (dispatch, getState) => {
-		fetchCurrentUserPerformanceData().then((response) => {
-			// console.log("UserPerformance Response from Thunk", response);
-			return dispatch(setTotalUserActivity(response));
-		});
+export function saveUserActivityData(payload) {
+	return (dispatch) => {
+		saveUserActivity(payload)
+			.then((response) => {
+				// console.log("Activity response from Thunk", res);
+				const { chapter, daily, story, performance } = response;
+				console.log("Story from Thunk", story);
+				const {
+					totalCaloriesBurned,
+					totalBodyMoves,
+					totalTimeDancedInMilliseconds,
+					totalDaysActive,
+				} = performance;
+				const { bodyMoves, caloriesBurned } = daily;
+				dispatch(updateCurrentChapters(payload));
+				dispatch(
+					initializeTotalUserActivity({
+						totalCaloriesBurned,
+						totalBodyMoves,
+						totalTimeDancedInMilliseconds,
+						totalDaysActive,
+					})
+				);
+				dispatch(
+					setUserDailyActivity({
+						bodyMoves,
+						caloriesBurned,
+					})
+				);
+				return dispatch(updateCurrentChapter(chapter));
+			})
+			.catch((error) => console.error(error));
 	};
 }
 

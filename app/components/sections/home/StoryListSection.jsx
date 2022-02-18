@@ -25,11 +25,14 @@ const StoryListSection = ({ triggerNavigate, stories }) => {
 				stories.map((story) => {
 					return (
 						<StoryCard
-							key={story._id}
+							key={story.contentStoryId}
 							source={story.thumb}
 							storyTitle={story.title}
-							storyStatus="30"
-							onPress={() => triggerNavigate(story._id)}
+							onPress={() => triggerNavigate(story.contentStoryId)}
+							completed={story.completed}
+							started={story.started}
+							totalTargetBodyMoves={story.totalTargetBodyMoves}
+							totalBodyMoves={story.totalBodyMoves}
 						/>
 					);
 				})

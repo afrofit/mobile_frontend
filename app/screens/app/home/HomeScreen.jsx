@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+
 import contentApi from "../../../api/content/contentApi";
 import subscriptionApi from "../../../api/subscription/subscriptionApi";
 import HomeStatsCard from "../../../components/cards/HomeStatsCard";
@@ -12,11 +13,13 @@ import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscr
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
-import Font from "../../../elements/Font";
-import useSubscription from "../../../hooks/useSubscription";
-import { getDailyActivity } from "../../../store/reducers/activityReducer";
+import {
+	getDailyActivity,
+	requestUserDailyActivity,
+} from "../../../store/reducers/activityReducer";
 import {
 	getCurrentUserSubscription,
+	requestCurrentUserSubscription,
 	setSubscription,
 } from "../../../store/reducers/subscriptionReducer";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
@@ -25,9 +28,8 @@ import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";
 import { formatStatsNumbers } from "../../../utilities/formatters";
 import ScreenContainer from "../../../utilities/ScreenContainer";
-import Spacer from "../../../utilities/Spacer";
 
-const HomeScreen = ({ navigation, subscription }) => {
+const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 
 	/*
@@ -42,7 +44,7 @@ const HomeScreen = ({ navigation, subscription }) => {
 	 * Fetch relevant data from selectors
 	 */
 
-	const { username, isTrial, isPremium, hasTrial } = currentUser;
+	const { username, hasTrial } = currentUser;
 	const { caloriesBurned, bodyMoves } = todaysActivity;
 	/*
 	 *useState for errors, modals etc
@@ -58,13 +60,10 @@ const HomeScreen = ({ navigation, subscription }) => {
 	 */
 
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
-	const fetchStoresApi = useApi(contentApi.getStories);
+	const fetchStoriesApi = useApi(contentApi.getStories);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
 		React.useState(false);
-
-	// const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
-	// React.useState(!hasTrial && !isTrial && !isPremium);
 
 	const [showConfirmModal, setShowConfirmModal] = React.useState({
 		show: false,
@@ -76,7 +75,9 @@ const HomeScreen = ({ navigation, subscription }) => {
 
 	/**Effects */
 	React.useEffect(() => {
-		fetchStoriesSanity();
+		dispatch(requestUserDailyActivity());
+		dispatch(requestCurrentUserSubscription());
+		fetchAllStories();
 	}, []);
 
 	/*
@@ -84,24 +85,18 @@ const HomeScreen = ({ navigation, subscription }) => {
 	 */
 
 	// Might have to do away with this logic fetch subscription from server direct
-	const checkSubscriptionStatus = (storyId) => {
-		// Check for subscription
+	const checkSubscriptionStatus = (contentStoryId) => {
 		if (currentSubscription.isExpired)
 			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-		// else if (!isTrial && !isPremium && hasTrial) return setShowTrialModal(true);
-		return triggerNavigate(storyId);
+		return triggerNavigate(contentStoryId);
 	};
 
 	/*
 	 * Navigation logic
 	 */
 
-	const triggerNavigate = (storyId) => {
-		console.log("Story Id, Homescreen", storyId);
-		navigation.navigate(routes.home.STORY_INTRO, { storyId });
-		// navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
-		// 	data: { success: true },
-		// });
+	const triggerNavigate = (contentStoryId) => {
+		navigation.navigate(routes.home.STORY_INTRO, { contentStoryId });
 	};
 
 	/*
@@ -152,8 +147,8 @@ const HomeScreen = ({ navigation, subscription }) => {
 		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
 	};
 
-	const fetchStoriesSanity = async () => {
-		const result = await fetchStoresApi.request();
+	const fetchAllStories = async () => {
+		const result = await fetchStoriesApi.request();
 
 		if (!result.ok) {
 			if (result.data) {
@@ -163,11 +158,30 @@ const HomeScreen = ({ navigation, subscription }) => {
 			}
 			return;
 		}
-		setStories(result.data);
+		const { data } = result;
+
+		const sortedStories = data.sort((a, b) =>
+			a.storyOrderNumber < b.storyOrderNumber
+				? -1
+				: Number(a.storyOrderNumber > b.storyOrderNumber)
+		);
+		// console.log(
+		// 	"Stories",
+		// 	sortedStories.map((story) => ({
+		// 		title: story.title,
+		// 		completed: story.completed,
+		// 		started: story.started,
+		// 		totalBodyMoves: story.totalBodyMoves,
+		// 		totalTargetActualBodyMoves: story.totalTargetActualBodyMoves,
+		// 		totalTargetBodyMoves: story.totalTargetBodyMoves,
+		// 		totalTargetUserTimeInMillis: story.totalTargetUserTimeInMillis,
+		// 		totalUserTimeSpentInMillis: story.totalUserTimeSpentInMillis,
+		// 	}))
+		// );
+		setStories(sortedStories);
 	};
 
 	const triggerCreateSubscription = async (value) => {
-		console.log("Value", value);
 		const result = await createSubscriptionApi.request(value);
 
 		if (!result.ok) {
@@ -186,8 +200,7 @@ const HomeScreen = ({ navigation, subscription }) => {
 	return (
 		<>
 			<Loader
-				// visible={true}
-				visible={createSubscriptionApi.loading || fetchStoresApi.loading}
+				visible={createSubscriptionApi.loading || fetchStoriesApi.loading}
 				message="Loading your content"
 			/>
 			{showConfirmModal.show && (
@@ -220,7 +233,6 @@ const HomeScreen = ({ navigation, subscription }) => {
 			<ScreenContainer backgroundColor={COLORS.dark} noTouch={true}>
 				<FormErrorMessage error={error} />
 				<ContentContainer>
-					{/* <Spacer h="10px" /> */}
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />
 					<HomeStatsCard
 						calBurned={formatStatsNumbers(caloriesBurned)}

@@ -33,7 +33,7 @@ const ProfileSubscriptionCard = ({
 	onCancelSubscription,
 }) => {
 	/**State */
-	console.log("Subscription from ProfileSubCard: ", subscription);
+	// console.log("Subscription from ProfileSubCard: ", subscription);
 	const { endDate, isExpired, name, id } = subscription;
 
 	return (
