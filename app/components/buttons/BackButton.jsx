@@ -12,7 +12,7 @@ const Touchable = styled.Pressable`
 
 const BackButton = ({ color = COLORS.white, onPress, left, top }) => {
 	return (
-		<Touchable onPress={onPress} left={left} top={top}>
+		<Touchable hitSlop={25} onPress={onPress} left={left} top={top}>
 			<FontAwesome5 name="arrow-circle-left" size={20} color={color} />
 		</Touchable>
 	);

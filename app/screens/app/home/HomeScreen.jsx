@@ -50,7 +50,7 @@ const HomeScreen = ({ navigation }) => {
 
 	const [showTrialModal, setShowTrialModal] = React.useState(false);
 
-	/**Create Subscription API flow here */
+	/** Create Subscription API flow here */
 
 	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
 	const fetchStoriesApi = useApi(contentApi.getStories);
@@ -66,7 +66,7 @@ const HomeScreen = ({ navigation }) => {
 		value: "",
 	});
 
-	/**Effects */
+	/** Effects */
 	React.useEffect(() => {
 		dispatch(requestUserDailyActivity());
 		dispatch(requestCurrentUserSubscription());
