@@ -4,7 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 // import SuccessScreen from "./../screens/notification/SuccessScreen";
 import routes from "../theme/routes";
 import VerifyCodeScreen from "../screens/auth/VerifyCodeScreen";
-import FullNotifyScreen from "../screens/notifications/FullNotifyScreen";
+import VerifiedNotifyScreen from "../screens/notifications/VerifiedNotifyScreen";
 
 const Stack = createStackNavigator();
 
@@ -16,7 +16,7 @@ const VerifyEmailNavigator = () => (
 		/>
 		<Stack.Screen
 			name={routes.notifications.SUCCESS_VERIFY}
-			component={FullNotifyScreen}
+			component={VerifiedNotifyScreen}
 		/>
 	</Stack.Navigator>
 );

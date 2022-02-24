@@ -1,27 +1,31 @@
 import * as React from "react";
 import { StatusBar } from "expo-status-bar";
 
-import LoadApp from "../app/utilities/LoadApp";
-import { fonts } from "./theme/fonts";
-import AuthNavigator from "./navigator/AuthNavigator";
 import AppNavigator from "./navigator/AppNavigator";
-import { getCurrentUser, setCurrentUser } from "./store/reducers/userReducer";
-import { useDispatch } from "react-redux";
-import VerifyEmailNavigator from "./navigator/VerifyCodeNavigator";
-import { useSelector } from "react-redux";
-import { requestCurrentUserSubscription } from "./store/reducers/subscriptionReducer";
-import { requestUserDailyActivity } from "./store/reducers/activityReducer";
+import AuthNavigator from "./navigator/AuthNavigator";
+import GenericErrorMessage from "./components/form/fields/GenericErrorMessage";
+import LoadApp from "../app/utilities/LoadApp";
+import Loader from "./components/Loader";
 import useAuth from "./hooks/useAuth";
+import VerifyEmailNavigator from "./navigator/VerifyCodeNavigator";
+
+import { fonts } from "./theme/fonts";
+import { getCurrentUser, setCurrentUser } from "./store/reducers/userReducer";
 import { restoreStoredCurrentUser } from "./utilities/startup_scripts";
+import {
+	selectShowGenericErrorDialog,
+	selectUiIsLoading,
+} from "./store/reducers/uiReducer";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 const Index = () => {
 	const dispatch = useDispatch();
 	const { logOut } = useAuth();
 
-	/**Local State */
-	const [error, setError] = React.useState(null);
-
-	/**Selectors */
+	/** Selectors */
+	const isLoading = useSelector(selectUiIsLoading);
+	const error = useSelector(selectShowGenericErrorDialog);
 	const currentUser = useSelector(getCurrentUser);
 
 	// logOut();
@@ -35,6 +39,9 @@ const Index = () => {
 
 	return (
 		<LoadApp {...{ fonts }}>
+			<GenericErrorMessage error={error} />
+			<Loader visible={isLoading} />
+
 			<StatusBar style="auto" />
 			{currentUser && currentUser.isVerified && <AppNavigator />}
 			{currentUser && currentUser.isRegistered && !currentUser.isVerified && (

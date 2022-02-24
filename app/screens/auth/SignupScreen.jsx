@@ -1,25 +1,26 @@
 import * as React from "react";
 import styled from "styled-components/native";
-import { Keyboard } from "react-native";
 import * as Yup from "yup";
 
-import authApi from "../../api/auth/authApi";
+import { Keyboard } from "react-native";
+
+import AuthScreensHeader from "../../components/AuthScreensHeader";
 import Button from "../../components/buttons/Button";
 import CheckBoxField from "../../components/form/fields/CheckBoxField";
 import ClearButton from "../../components/buttons/ClearButton";
-import { COLORS } from "../../theme/colors";
 import Form from "../../components/form/Form";
-import FormErrorMessage from "../../components/form/fields/FormErrorMessage";
-import { ImageBackground } from "../../components/ImageBackground";
 import PasswordInputField from "../../components/form/fields/PasswordInputField";
 import routes from "../../theme/routes";
 import ScreenContainer from "../../utilities/ScreenContainer";
 import Spacer from "../../utilities/Spacer";
 import TextInputField from "../../components/form/fields/TextInputField";
-import useAuth from "../../hooks/useAuth";
-import useApi from "../../hooks/useApi";
-import Loader from "../../components/Loader";
-import AuthScreensHeader from "../../components/AuthScreensHeader";
+
+import { COLORS } from "../../theme/colors";
+import { createAccount } from "../../store/thunks/userReducerThunks";
+import { ImageBackground } from "../../components/ImageBackground";
+import { useDispatch, useSelector } from "react-redux";
+import { hideGenericErrorDialog } from "../../store/reducers/uiReducer";
+import { getSignupSuccess } from "../../store/reducers/userReducer";
 
 const initialValues = {
 	username: "olasupoodebiyi",
@@ -56,53 +57,40 @@ const AuthBodyContainer = styled.View`
 `;
 
 const SignupScreen = ({ navigation }) => {
-	// All useState Stuff setup here
-	const [error, setError] = React.useState();
+	const dispatch = useDispatch();
 
-	// Create Account API flow here
-	const { createAccount } = useAuth();
-	const createAccountApi = useApi(authApi.createAccount);
+	const signupStatus = useSelector(getSignupSuccess);
 
-	const handleCreateAccount = async (userData, { resetForm }) => {
-		Keyboard.dismiss();
-		const { username, email, password } = userData;
-		const result = await createAccountApi.request(email, password, username);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
+	React.useEffect(() => {
+		if (signupStatus) {
+			return triggerSignupSuccess();
 		}
-		resetForm();
-		return triggerSignupSuccess(result.data);
-	};
+	}, [signupStatus]);
 
-	const triggerSignupSuccess = (data) => {
+	const handleCreateAccount = React.useCallback(
+		async (userData, { resetForm }) => {
+			Keyboard.dismiss();
+			const { email, password, username } = userData;
+			dispatch(createAccount(email, password, username));
+			resetForm();
+		},
+		[signupStatus]
+	);
+
+	const triggerSignupSuccess = () => {
 		navigation.navigate(routes.notifications.SUCCESS_SIGNUP, {
-			data,
-			func: createAccount,
-			onwardRoute: "",
-			message:
-				"We've sent a 6-digit verification code to the email you provided.",
-			succeed: true,
-			instruction: "Tap continue when you've got it",
+			message: "You've been verified!",
+			instruction:
+				"Tap start when you're ready to build your fitness and find your rhythm",
 		});
 	};
 
 	return (
 		<>
-			<Loader
-				visible={createAccountApi.loading}
-				message="Creating Your Account"
-			/>
 			<ScreenContainer
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				<FormErrorMessage error={error} />
 				<AuthScreensHeader title="Create Account" />
 
 				<AuthBodyContainer>
@@ -126,7 +114,7 @@ const SignupScreen = ({ navigation }) => {
 									label="Username"
 									name="username"
 									maxLength={25}
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 								<TextInputField
 									autoCapitalize="none"
@@ -134,7 +122,7 @@ const SignupScreen = ({ navigation }) => {
 									name="email"
 									keyboardType="email-address"
 									textContentType="emailAddress"
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 								<PasswordInputField
 									autoCapitalize="none"
@@ -142,7 +130,7 @@ const SignupScreen = ({ navigation }) => {
 									name="password"
 									textContentType="password"
 									maxLength={25}
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 								{/* <Spacer /> */}
 								<CheckBoxField

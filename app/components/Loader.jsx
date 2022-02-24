@@ -26,7 +26,7 @@ const LoaderContainer = styled.View`
 	align-items: center;
 `;
 
-const Loader = ({ message = "Fetching Data", visible = true }) => {
+const Loader = ({ message = "Loading Content", visible = true }) => {
 	let animationRef;
 
 	React.useEffect(() => {

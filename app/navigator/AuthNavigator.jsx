@@ -7,6 +7,8 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import ResetPasswordScreen from "../screens/auth/ResetPasswordScreen";
 import routes from "../theme/routes";
 import FullNotifyScreen from "../screens/notifications/FullNotifyScreen";
+import SuccessSignupNotifyScreen from "../screens/notifications/SignUpSuccessNotifyScreen";
+import ActionNotifyScreen from "../screens/notifications/ActionNotifyScreen";
 // import VerifyCodeScreen from "../screens/auth/VerifyCodeScreen";
 
 const Stack = createStackNavigator();
@@ -24,7 +26,7 @@ const AuthNavigator = () => (
 		/>
 		<Stack.Screen
 			name={routes.notifications.SUCCESS_SIGNUP}
-			component={FullNotifyScreen}
+			component={ActionNotifyScreen}
 		/>
 		<Stack.Screen
 			name={routes.notifications.SUCCESS_PASSWORD_CHANGE}

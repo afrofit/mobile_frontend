@@ -2,17 +2,22 @@ import * as React from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 
-import contentApi from "../../../api/content/contentApi";
-import subscriptionApi from "../../../api/subscription/subscriptionApi";
-import HomeStatsCard from "../../../components/cards/HomeStatsCard";
-import { ContentContainer } from "../../../components/ContentContainer";
-import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
-import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
-import Loader from "../../../components/Loader";
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
-import TrialStartModal from "../../../components/modals/TrialStartModal";
+import contentApi from "../../../api/content/contentApi";
+import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
+import HomeStatsCard from "../../../components/cards/HomeStatsCard";
+import Loader from "../../../components/Loader";
+import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
+import routes from "../../../theme/routes";
+import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
+import subscriptionApi from "../../../api/subscription/subscriptionApi";
+import TrialStartModal from "../../../components/modals/TrialStartModal";
+
+import { ContentContainer } from "../../../components/ContentContainer";
+import { COLORS } from "../../../theme/colors";
+import { formatStatsNumbers } from "../../../utilities/formatters";
 import {
 	getDailyActivity,
 	requestUserDailyActivity,
@@ -22,17 +27,15 @@ import {
 	requestCurrentUserSubscription,
 	setSubscription,
 } from "../../../store/reducers/subscriptionReducer";
-import { getCurrentUser } from "../../../store/reducers/userReducer";
-
-import { COLORS } from "../../../theme/colors";
-import routes from "../../../theme/routes";
-import { formatStatsNumbers } from "../../../utilities/formatters";
-import ScreenContainer from "../../../utilities/ScreenContainer";
+import {
+	getCurrentUser,
+	setVerifySuccess,
+} from "../../../store/reducers/userReducer";
 
 const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 
-	/** use Selectors to grab data from Redux Store */
+	/** Selectors */
 
 	const currentUser = useSelector(getCurrentUser);
 	const currentSubscription = useSelector(getCurrentUserSubscription);
@@ -68,6 +71,7 @@ const HomeScreen = ({ navigation }) => {
 
 	/** Effects */
 	React.useEffect(() => {
+		dispatch(setVerifySuccess(false));
 		dispatch(requestUserDailyActivity());
 		dispatch(requestCurrentUserSubscription());
 		fetchAllStories();

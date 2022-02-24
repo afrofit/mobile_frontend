@@ -9,6 +9,10 @@ import useDisableHardwareBack from "../../hooks/useDisableHardwareBack";
 
 import { COLORS } from "../../theme/colors";
 import { DecorativeElement } from "../../components/DecorativeElement";
+import { useDispatch, useSelector } from "react-redux";
+import { getCurrentUserToken } from "../../store/reducers/userReducer";
+import useAuth from "../../hooks/useAuth";
+import authFuncs from "../../store/thunks/auth_functions";
 
 const NotifierContainer = styled.View`
 	height: 100%;
@@ -56,23 +60,24 @@ const InstructionText = styled(Font)`
 	color: ${COLORS.yellow};
 `;
 
-const FullNotifyScreen = ({ navigation, route }) => {
-	const { data, func, onwardRoute, message, succeed, instruction } =
-		route.params;
+const ActionNotifyScreen = ({ navigation, route }) => {
+	const { instruction, message } = route.params;
 
-	// Disable Back Button
+	/** Selectors */
+	const currentUserToken = useSelector(getCurrentUserToken);
+	const dispatch = useDispatch();
+
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
 
 	const dismissScreen = () => {
-		func(data);
-		if (onwardRoute) return navigation.navigate(onwardRoute);
+		authFuncs.updateUserInStore(dispatch, currentUserToken);
 	};
 
 	return (
 		<ScreenContainer backgroundColor={COLORS.black}>
 			<NotifierContainer>
-				<PageHeaderSmall title={succeed ? "SUCCESS" : "OH NO!"} />
+				<PageHeaderSmall title="SUCCESS" />
 
 				<MidSection>
 					<DecorativeElement
@@ -99,4 +104,4 @@ const FullNotifyScreen = ({ navigation, route }) => {
 	);
 };
 
-export default FullNotifyScreen;
+export default ActionNotifyScreen;

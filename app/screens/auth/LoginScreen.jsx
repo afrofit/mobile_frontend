@@ -3,22 +3,21 @@ import styled from "styled-components/native";
 import { Keyboard } from "react-native";
 import * as Yup from "yup";
 
-import authApi from "../../api/auth/authApi";
+import AuthScreensHeader from "../../components/AuthScreensHeader";
 import Button from "../../components/buttons/Button";
 import ClearButton from "../../components/buttons/ClearButton";
-import { COLORS } from "../../theme/colors";
 import Form from "../../components/form/Form";
-import FormErrorMessage from "../../components/form/fields/FormErrorMessage";
-import { ImageBackground } from "../../components/ImageBackground";
 import PasswordInputField from "../../components/form/fields/PasswordInputField";
 import routes from "../../theme/routes";
 import ScreenContainer from "../../utilities/ScreenContainer";
 import Spacer from "../../utilities/Spacer";
 import TextInputField from "../../components/form/fields/TextInputField";
-import useAuth from "../../hooks/useAuth";
-import useApi from "../../hooks/useApi";
-import Loader from "../../components/Loader";
-import AuthScreensHeader from "../../components/AuthScreensHeader";
+
+import { ImageBackground } from "../../components/ImageBackground";
+import { COLORS } from "../../theme/colors";
+import { logUserIn } from "../../store/thunks/userReducerThunks";
+import { useDispatch } from "react-redux";
+import { hideGenericErrorDialog } from "../../store/reducers/uiReducer";
 
 const initialValues = {
 	email: "olasupoodebiyi@yahoo.com",
@@ -45,42 +44,21 @@ const AuthBodyContainer = styled.View`
 `;
 
 const LoginScreen = ({ navigation }) => {
-	// All useState Stuff setup here
-	const [error, setError] = React.useState();
-
-	// Create Account API flow here
-	const { logUserIn } = useAuth();
-	const logUserInApi = useApi(authApi.logUserIn);
+	const dispatch = useDispatch();
 
 	const handleLogin = async (userData, { resetForm }) => {
 		Keyboard.dismiss();
 		const { email, password } = userData;
-		const result = await logUserInApi.request(email, password);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		// console.log("Login result", result.data);
+		dispatch(logUserIn(email, password));
 		resetForm();
-		return logUserIn(result.data);
 	};
 
 	return (
 		<>
-			<Loader
-				visible={logUserInApi.loading}
-				message="Logging in to your account"
-			/>
 			<ScreenContainer
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				<FormErrorMessage error={error} />
 				<AuthScreensHeader title="Log In" />
 				<AuthBodyContainer>
 					<Form
@@ -103,7 +81,7 @@ const LoginScreen = ({ navigation }) => {
 									name="email"
 									keyboardType="email-address"
 									textContentType="emailAddress"
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 								<PasswordInputField
 									autoCapitalize="none"
@@ -111,7 +89,7 @@ const LoginScreen = ({ navigation }) => {
 									name="password"
 									textContentType="password"
 									maxLength={25}
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 
 								<Spacer h="20px" />

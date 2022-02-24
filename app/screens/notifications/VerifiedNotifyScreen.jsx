@@ -9,6 +9,10 @@ import useDisableHardwareBack from "../../hooks/useDisableHardwareBack";
 
 import { COLORS } from "../../theme/colors";
 import { DecorativeElement } from "../../components/DecorativeElement";
+import { useDispatch, useSelector } from "react-redux";
+import { getCurrentUserToken } from "../../store/reducers/userReducer";
+import useAuth from "../../hooks/useAuth";
+import authFuncs from "../../store/thunks/auth_functions";
 
 const NotifierContainer = styled.View`
 	height: 100%;
@@ -56,31 +60,37 @@ const InstructionText = styled(Font)`
 	color: ${COLORS.yellow};
 `;
 
-const FullNotifyScreen = ({ navigation, route }) => {
-	const { data, func, onwardRoute, message, succeed, instruction } =
-		route.params;
+const VerifiedNotifyScreen = ({ navigation }) => {
+	/** Selectors */
+	const currentUserToken = useSelector(getCurrentUserToken);
+	const dispatch = useDispatch();
+
+	// const { verifyUser } = useAuth();
 
 	// Disable Back Button
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
 
 	const dismissScreen = () => {
-		func(data);
-		if (onwardRoute) return navigation.navigate(onwardRoute);
+		// verifyUser(currentUserToken);
+		authFuncs.updateUserInStore(dispatch, currentUserToken);
 	};
 
 	return (
 		<ScreenContainer backgroundColor={COLORS.black}>
 			<NotifierContainer>
-				<PageHeaderSmall title={succeed ? "SUCCESS" : "OH NO!"} />
+				<PageHeaderSmall title="SUCCESS" />
 
 				<MidSection>
 					<DecorativeElement
 						width="120"
 						source={require("../../assets/images/elements/three_stars_gray.png")}
 					/>
-					<MessageText>{message}</MessageText>
-					<InstructionText>{instruction}</InstructionText>
+					<MessageText>You've been verified!</MessageText>
+					<InstructionText>
+						Tap start when you're ready to build your fitness and find your
+						rhythm
+					</InstructionText>
 					<DecorativeElement
 						width="120"
 						source={require("../../assets/images/elements/three_stars_gray.png")}
@@ -99,4 +109,4 @@ const FullNotifyScreen = ({ navigation, route }) => {
 	);
 };
 
-export default FullNotifyScreen;
+export default VerifiedNotifyScreen;

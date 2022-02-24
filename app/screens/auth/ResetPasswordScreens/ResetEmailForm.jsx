@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Keyboard } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import * as Yup from "yup";
 import authApi from "../../../api/auth/authApi";
@@ -14,6 +15,12 @@ import { ImageBackground } from "../../../components/ImageBackground";
 import Loader from "../../../components/Loader";
 import useApi from "../../../hooks/useApi";
 import useAuth from "../../../hooks/useAuth";
+import { hideGenericErrorDialog } from "../../../store/reducers/uiReducer";
+import {
+	getCurrentUserResetToken,
+	getEmailResetSuccess,
+} from "../../../store/reducers/userReducer";
+import { emailResetCode } from "../../../store/thunks/userReducerThunks";
 import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
@@ -39,45 +46,31 @@ const AuthBodyContainer = styled.View`
 `;
 
 const ResetEmailForm = ({ switchStage, stages, navigation, setEmail }) => {
-	// All useState Stuff setup here
-	const [error, setError] = React.useState(null);
+	const dispatch = useDispatch();
 
-	// Create Account API flow here
-	const { reactivateUser } = useAuth();
-	const emailResetCodeApi = useApi(authApi.sendPasswordResetCode);
+	const resetEmailStatus = useSelector(getEmailResetSuccess);
+	// const currentUserResetToken = useSelector(getCurrentUserResetToken);
+
+	React.useEffect(() => {
+		if (resetEmailStatus) {
+			return switchStage(stages.VERIFY);
+		}
+	}, [resetEmailStatus]);
 
 	const handleResetEmail = async (userData, { resetForm }) => {
 		Keyboard.dismiss();
 		const { email } = userData;
-		const result = await emailResetCodeApi.request(email);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-
-		reactivateUser(result.data);
+		dispatch(emailResetCode(email));
 		resetForm();
 		setEmail(email);
-		return switchStage(stages.VERIFY);
 	};
 
 	return (
 		<>
-			<Loader
-				visible={emailResetCodeApi.loading}
-				message="Creating Your Account"
-			/>
-
 			<ScreenContainer
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				<FormErrorMessage error={error} />
 				<AuthScreensHeader title="What's your email?" />
 				<AuthBodyContainer>
 					<Form
@@ -100,7 +93,7 @@ const ResetEmailForm = ({ switchStage, stages, navigation, setEmail }) => {
 									name="email"
 									keyboardType="email-address"
 									textContentType="emailAddress"
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 
 								<Spacer h="20px" />
@@ -108,7 +101,7 @@ const ResetEmailForm = ({ switchStage, stages, navigation, setEmail }) => {
 								<ClearButton
 									variant="white"
 									text="Log in instead"
-									onPress={() => navigation.navigate(routes.auth.SIGNUP)}
+									onPress={() => navigation.navigate(routes.auth.LOGIN)}
 								/>
 								<Spacer h="10px" />
 								<Button

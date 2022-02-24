@@ -1,24 +1,30 @@
 import * as React from "react";
-import { Keyboard } from "react-native";
-import styled from "styled-components/native";
 import * as Yup from "yup";
+import styled from "styled-components/native";
 
-import authApi from "../../../api/auth/authApi";
+import { Keyboard } from "react-native";
+
+import AlertModal from "../../../components/modals/AlertModal";
 import AuthScreensHeader from "../../../components/AuthScreensHeader";
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
-import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
-import NumberInputField from "../../../components/form/fields/NumberInputField";
 import Form from "../../../components/form/Form";
-import { ImageBackground } from "../../../components/ImageBackground";
 import Loader from "../../../components/Loader";
-import AlertModal from "../../../components/modals/AlertModal";
-import useApi from "../../../hooks/useApi";
-import useAuth from "../../../hooks/useAuth";
-import { COLORS } from "../../../theme/colors";
+import NumberInputField from "../../../components/form/fields/NumberInputField";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
+
+import { COLORS } from "../../../theme/colors";
+import { getConfirmPasswordResetCodeSuccess } from "../../../store/reducers/userReducer";
+import { hideGenericErrorDialog } from "../../../store/reducers/uiReducer";
+import { ImageBackground } from "../../../components/ImageBackground";
+import {
+	passwordResetCodeVerify,
+	resendEmailVerifyResetCode,
+	resendUserVerificationCode,
+} from "../../../store/thunks/userReducerThunks";
+import { useDispatch, useSelector } from "react-redux";
 
 const initialValues = {
 	code: "",
@@ -37,53 +43,38 @@ const AuthBodyContainer = styled.View`
 `;
 
 const VerifyCodeForm = ({ switchStage, stages, navigation, email }) => {
-	// All useState Stuff setup here
-	const [error, setError] = React.useState(null);
 	const [showCodeSuccessModal, setShowCodeSuccessModal] = React.useState(false);
 	const [showResendCodeSuccessModal, setShowResendCodeSuccessModal] =
 		React.useState(false);
 
-	// Create Account API flow here
-	const { reactivateUser } = useAuth();
-	const verifyPasswordResetCodeApi = useApi(authApi.verifyPasswordResetCode);
-	const resendPasswordVerifyCodeApi = useApi(
-		authApi.resendResetPasswordVerifyCode
+	const dispatch = useDispatch();
+
+	const confirmResetPasswordCodeStatus = useSelector(
+		getConfirmPasswordResetCodeSuccess
 	);
 
-	const handleVerifyEmailCode = async (data, { resetForm }) => {
-		Keyboard.dismiss();
-		const result = await verifyPasswordResetCodeApi.request(+data.code);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
+	React.useEffect(() => {
+		if (confirmResetPasswordCodeStatus) {
+			triggerSuccess();
 		}
+	}, [confirmResetPasswordCodeStatus]);
 
-		reactivateUser(result.data);
+	const handleVerifyEmailedCode = async (data, { resetForm }) => {
+		Keyboard.dismiss();
+		const { code } = data;
+		dispatch(passwordResetCodeVerify(+code));
 		resetForm();
 		return setShowCodeSuccessModal(true);
+	};
+
+	const handleResendEmailVerifyCode = async () => {
+		dispatch(resendEmailVerifyResetCode(email));
+		return setShowResendCodeSuccessModal(true);
 	};
 
 	const triggerSuccess = () => {
 		setShowCodeSuccessModal(false);
 		return switchStage(stages.RESET);
-	};
-
-	const handleResendCode = async () => {
-		const result = await resendPasswordVerifyCodeApi.request(email);
-
-		if (!result.ok) {
-			if (result.data) setError("Could not send a new code. Retry?");
-			else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		return setShowResendCodeSuccessModal(true);
 	};
 
 	return (
@@ -105,12 +96,12 @@ const VerifyCodeForm = ({ switchStage, stages, navigation, email }) => {
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				<FormErrorMessage error={error} />
+				{/* <FormErrorMessage error={error} /> */}
 				<AuthScreensHeader title="Verify Reset Code" />
 				<AuthBodyContainer>
 					<Form
 						initialValues={initialValues}
-						onSubmit={handleVerifyEmailCode}
+						onSubmit={handleVerifyEmailedCode}
 						validationSchema={validationSchema}
 						// isInitialValid={false}
 						initialTouched={{
@@ -127,9 +118,7 @@ const VerifyCodeForm = ({ switchStage, stages, navigation, email }) => {
 									maxLength={6}
 									name="code"
 									label="Verification code"
-									keyboardType="email-address"
-									textContentType="emailAddress"
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 
 								<Spacer h="20px" />
@@ -137,7 +126,7 @@ const VerifyCodeForm = ({ switchStage, stages, navigation, email }) => {
 								<ClearButton
 									variant="white"
 									text="Resend Verification Code"
-									onPress={handleResendCode}
+									onPress={handleResendEmailVerifyCode}
 								/>
 								<Spacer />
 								<ClearButton

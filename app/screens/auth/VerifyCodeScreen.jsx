@@ -5,22 +5,24 @@ import * as Yup from "yup";
 import { useFocusEffect } from "@react-navigation/native";
 
 import AlertModal from "../../components/modals/AlertModal";
-import authApi from "../../api/auth/authApi";
 import AuthScreensHeader from "../../components/AuthScreensHeader";
 import Button from "../../components/buttons/Button";
 import ClearButton from "../../components/buttons/ClearButton";
 import { COLORS } from "../../theme/colors";
 import Form from "../../components/form/Form";
-import FormErrorMessage from "../../components/form/fields/FormErrorMessage";
 import { ImageBackground } from "../../components/ImageBackground";
-import Loader from "../../components/Loader";
 import NumberInputField from "../../components/form/fields/NumberInputField";
 import routes from "../../theme/routes";
 import Spacer from "../../utilities/Spacer";
 import ScreenContainer from "../../utilities/ScreenContainer";
-import useApi from "../../hooks/useApi";
-import useAuth from "../../hooks/useAuth";
 import useDisableHardwareBack from "../../hooks/useDisableHardwareBack";
+import { useDispatch, useSelector } from "react-redux";
+import { getVerifySuccess } from "../../store/reducers/userReducer";
+import { hideGenericErrorDialog } from "../../store/reducers/uiReducer";
+import {
+	resendUserVerificationCode,
+	verifyUserCode,
+} from "../../store/thunks/userReducerThunks";
 
 const initialValues = {
 	code: "",
@@ -39,69 +41,46 @@ const AuthBodyContainer = styled.View`
 `;
 
 const VerifyCodeScreen = ({ navigation }) => {
-	// All useState Stuff setup here
-	const [error, setError] = React.useState(null);
+	// const [error, setError] = React.useState(null);
 	const [showSuccessModal, setShowSuccessModal] = React.useState(false);
 
-	// Disable Back Button
+	/** Dispatches */
+	const dispatch = useDispatch();
+
+	const verifyStatus = useSelector(getVerifySuccess);
+
+	React.useEffect(() => {
+		if (verifyStatus) {
+			return triggerVerifySuccess();
+		}
+	}, [verifyStatus]);
+
+	/** Disable Back Button */
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
 
-	// Create Account API flow here
-	const { verifyUser } = useAuth();
-
-	const verifyCodeApi = useApi(authApi.verifySignupCode);
-	const resendVerificationCodeApi = useApi(
-		authApi.resendSignupVerificationCode
-	);
-
 	const handleVerifyEmailCode = async (data, { resetForm }) => {
 		Keyboard.dismiss();
-		const result = await verifyCodeApi.request(+data.code);
-
-		if (!result.ok) {
-			if (result.data) setError(result.data);
-			else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
+		dispatch(verifyUserCode(+data.code));
 		resetForm();
-		return triggerVerifySuccess(result.data);
 	};
 
-	const triggerVerifySuccess = (data) => {
+	const triggerVerifySuccess = () => {
 		navigation.navigate(routes.notifications.SUCCESS_VERIFY, {
-			data,
-			func: verifyUser,
-			onwardRoute: "",
-			message: "You've been verified!",
-			succeed: true,
-			instruction:
-				"Tap start when you're ready to build your fitness and find your rhythm",
+			message:
+				"We've sent a 6-digit verification code to the email you provided.",
+			instruction: "Tap continue when you've got it",
 		});
 	};
 
 	const handleResendCode = async () => {
-		const result = await resendVerificationCodeApi.request();
+		dispatch(resendUserVerificationCode());
 
-		if (!result.ok) {
-			if (result.data) returnsetError("Could not send a new code. Retry?");
-			else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
 		return setShowSuccessModal(true);
 	};
 
 	return (
 		<>
-			<Loader
-				// visible={true}
-				visible={verifyCodeApi.loading || resendVerificationCodeApi.loading}
-				message="Creating Your Account"
-			/>
 			{showSuccessModal && (
 				<AlertModal
 					message="Check your email."
@@ -112,7 +91,7 @@ const VerifyCodeScreen = ({ navigation }) => {
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				<FormErrorMessage error={error} />
+				{/* <FormErrorMessage error={error} /> */}
 				<AuthScreensHeader title="Verify Reset Code" />
 				<AuthBodyContainer>
 					<Form
@@ -134,8 +113,7 @@ const VerifyCodeScreen = ({ navigation }) => {
 									maxLength={6}
 									name="code"
 									label="Verification code"
-									textContentType="emailAddress"
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 
 								<Spacer h="20px" />

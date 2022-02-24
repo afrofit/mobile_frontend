@@ -37,7 +37,7 @@ const removeToken = async () => {
 	}
 };
 
-//RESET TOKEN SHENANIGANS
+/** Reset Token Flow */
 
 const getResetToken = async () => {
 	try {

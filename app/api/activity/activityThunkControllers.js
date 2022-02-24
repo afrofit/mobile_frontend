@@ -7,7 +7,7 @@ const checkAPIErrors = (result) => {
 		if (result.data) {
 			return result.data;
 		} else {
-			return "An unexpected error occurred.";
+			return "Sorry! An unexpected error occurred.";
 		}
 	}
 	return result.data;

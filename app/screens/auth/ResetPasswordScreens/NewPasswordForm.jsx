@@ -89,7 +89,7 @@ const NewPasswordForm = ({ navigation }) => {
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				<FormErrorMessage error={error} />
+				{/* <FormErrorMessage error={error} /> */}
 				<AuthScreensHeader title="Your new password" />
 				<AuthBodyContainer>
 					<Form
@@ -128,7 +128,7 @@ const NewPasswordForm = ({ navigation }) => {
 								<ClearButton
 									variant="white"
 									text="Log in instead"
-									onPress={() => navigation.navigate(routes.auth.SIGNUP)}
+									onPress={() => navigation.navigate(routes.auth.LOGIN)}
 								/>
 								<Spacer h="10px" />
 								<Button

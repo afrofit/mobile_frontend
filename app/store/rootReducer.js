@@ -5,6 +5,7 @@ import subscriptionReducer from "./reducers/subscriptionReducer";
 import userReducer from "./reducers/userReducer";
 import rankingsReducer from "./reducers/rankingsReducer";
 import contentReducer from "./reducers/contentReducer";
+import uiReducer from "./reducers/uiReducer";
 
 export const rootReducer = combineReducers({
 	user: userReducer,
@@ -12,4 +13,5 @@ export const rootReducer = combineReducers({
 	subscription: subscriptionReducer,
 	rankings: rankingsReducer,
 	content: contentReducer,
+	ui: uiReducer,
 });
