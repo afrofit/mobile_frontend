@@ -1,23 +1,30 @@
 import * as React from "react";
-import { Keyboard } from "react-native";
-import styled from "styled-components/native";
 import * as Yup from "yup";
-import authApi from "../../../api/auth/authApi";
+import styled from "styled-components/native";
 
+import { Keyboard } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+
+import authApi from "../../../api/auth/authApi";
 import AuthScreensHeader from "../../../components/AuthScreensHeader";
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
-import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
-import PasswordInputField from "../../../components/form/fields/PasswordInputField";
 import Form from "../../../components/form/Form";
-import { ImageBackground } from "../../../components/ImageBackground";
-import Loader from "../../../components/Loader";
-import useApi from "../../../hooks/useApi";
-import useAuth from "../../../hooks/useAuth";
-import { COLORS } from "../../../theme/colors";
+import PasswordInputField from "../../../components/form/fields/PasswordInputField";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
+import useApi from "../../../hooks/useApi";
+import useAuth from "../../../hooks/useAuth";
+
+import { COLORS } from "../../../theme/colors";
+import { hideGenericErrorDialog } from "../../../store/reducers/uiReducer";
+import { ImageBackground } from "../../../components/ImageBackground";
+import {
+	getChangePasswordSuccess,
+	setChangePasswordSuccess,
+} from "../../../store/reducers/userReducer";
+import { changeUserPassword } from "../../../store/thunks/userReducerThunks";
 
 const initialValues = {
 	password: "olasup",
@@ -44,35 +51,25 @@ const AuthBodyContainer = styled.View`
 `;
 
 const NewPasswordForm = ({ navigation }) => {
-	// All useState stuff here...
-	const [error, setError] = React.useState();
+	const dispatch = useDispatch();
 
-	// Replace passwords flow here
-	const { logUserIn } = useAuth();
-	const setNewPasswordApi = useApi(authApi.setNewPassword);
+	const passwordChangeStatus = useSelector(getChangePasswordSuccess);
+
+	React.useEffect(() => {
+		if (passwordChangeStatus) {
+			triggerSuccess();
+		}
+	}, [passwordChangeStatus]);
 
 	const handleSetNewPassword = async (data, { resetForm }) => {
 		Keyboard.dismiss();
-		const result = await setNewPasswordApi.request(data.password);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
+		const { password } = data;
+		dispatch(changeUserPassword(password));
 		resetForm();
-		return triggerSuccess(result.data);
 	};
 
-	const triggerSuccess = (data) => {
+	const triggerSuccess = () => {
 		navigation.navigate(routes.notifications.SUCCESS_PASSWORD_CHANGE, {
-			data,
-			func: logUserIn,
-			onwardRoute: "",
-			succeed: true,
 			message: "You've successfully changed your password!",
 			instruction: "Tap continue to log in",
 		});
@@ -80,16 +77,10 @@ const NewPasswordForm = ({ navigation }) => {
 
 	return (
 		<>
-			<Loader
-				visible={setNewPasswordApi.loading}
-				message="Creating Your Account"
-			/>
-
 			<ScreenContainer
 				backgroundColor={COLORS.black}
 				onPress={() => Keyboard.dismiss()}
 			>
-				{/* <FormErrorMessage error={error} /> */}
 				<AuthScreensHeader title="Your new password" />
 				<AuthBodyContainer>
 					<Form
@@ -112,7 +103,7 @@ const NewPasswordForm = ({ navigation }) => {
 									name="password"
 									textContentType="password"
 									maxLength={25}
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 								<PasswordInputField
 									autoCapitalize="none"
@@ -120,7 +111,7 @@ const NewPasswordForm = ({ navigation }) => {
 									name="confirm-password"
 									textContentType="password"
 									maxLength={25}
-									onDismissError={() => setError(null)}
+									onDismissError={() => dispatch(hideGenericErrorDialog())}
 								/>
 
 								<Spacer h="20px" />

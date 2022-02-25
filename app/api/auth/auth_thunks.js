@@ -3,6 +3,7 @@ import apiClient from "../client";
 import authStorage from "../storage";
 
 /** Log In and Create Account Flow */
+
 export const accountCreate = (email, password, username) =>
 	apiClient.post("/users/create-account", { email, password, username });
 
@@ -10,6 +11,7 @@ export const logInUser = (email, password) =>
 	apiClient.post("/users/login", { email, password });
 
 /** Password Reset Flow */
+
 export const verifyPasswordResetCode = async (code) => {
 	const authResetToken = await authStorage.getResetToken();
 
@@ -33,6 +35,7 @@ export const setNewPassword = async (password) =>
 	apiClient.post("/users/set-new-password", { password });
 
 /** User Signup Verification */
+
 export const verifySignupCode = (code) =>
 	apiClient.put("/users/verify-signup-code", { code });
 
@@ -44,6 +47,7 @@ export const resendApiSignupVerificationCode = async () => {
 };
 
 /** Change Username */
+
 export const changeUsername = async (username) => {
 	const result = await apiClient.post("/users/change-username", { username });
 	return checkAPIErrors(result);

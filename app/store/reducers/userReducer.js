@@ -11,6 +11,7 @@ const initialState = {
 	changeUsernameSuccess: false,
 	resetEmailSuccess: false,
 	confirmPasswordResetCodeSuccess: false,
+	resendPasswordResetCodeSuccess: false,
 };
 
 const userSlice = createSlice({
@@ -34,6 +35,9 @@ const userSlice = createSlice({
 		},
 		setConfirmPasswordResetCodeSuccess(state, { payload }) {
 			state.confirmPasswordResetCodeSuccess = payload;
+		},
+		setResendPasswordResetCodeSuccess(state, { payload }) {
+			state.resendPasswordResetCodeSuccess = payload;
 		},
 		setChangePasswordSuccess(state, { payload }) {
 			state.changePasswordSuccess = payload;
@@ -66,6 +70,7 @@ export const {
 	setVerifySuccess,
 	setResetEmailSuccess,
 	setConfirmPasswordResetCodeSuccess,
+	setResendPasswordResetCodeSuccess,
 } = userSlice.actions;
 
 /** Selectors */
@@ -80,6 +85,8 @@ export const getChangePasswordSuccess = (state) =>
 	state.user.changePasswordSuccess;
 export const getConfirmPasswordResetCodeSuccess = (state) =>
 	state.user.confirmPasswordResetCodeSuccess;
+export const getResendPasswordResetCodeSuccess = (state) =>
+	state.user.resendPasswordResetCodeSuccess;
 export const getChangeUsernameSuccess = (state) =>
 	state.user.changeUsernameSuccess;
 export const getEmailResetSuccess = (state) => state.user.resetEmailSuccess;

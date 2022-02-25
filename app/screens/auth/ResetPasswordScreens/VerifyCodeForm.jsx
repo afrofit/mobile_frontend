@@ -25,6 +25,7 @@ import {
 	resendUserVerificationCode,
 } from "../../../store/thunks/userReducerThunks";
 import { useDispatch, useSelector } from "react-redux";
+import { switchStage } from "../../../store/reducers/resetPasswordReducer";
 
 const initialValues = {
 	code: "",
@@ -42,7 +43,7 @@ const AuthBodyContainer = styled.View`
 	padding-top: 5px;
 `;
 
-const VerifyCodeForm = ({ switchStage, stages, navigation, email }) => {
+const VerifyCodeForm = ({ stages, navigation, email }) => {
 	const [showCodeSuccessModal, setShowCodeSuccessModal] = React.useState(false);
 	const [showResendCodeSuccessModal, setShowResendCodeSuccessModal] =
 		React.useState(false);
@@ -74,7 +75,7 @@ const VerifyCodeForm = ({ switchStage, stages, navigation, email }) => {
 
 	const triggerSuccess = () => {
 		setShowCodeSuccessModal(false);
-		return switchStage(stages.RESET);
+		return dispatch(switchStage(stages.RESET));
 	};
 
 	return (

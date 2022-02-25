@@ -18,6 +18,7 @@ import {
 } from "./store/reducers/uiReducer";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+import { stages, switchStage } from "./store/reducers/resetPasswordReducer";
 
 const Index = () => {
 	const dispatch = useDispatch();
@@ -32,6 +33,7 @@ const Index = () => {
 
 	React.useEffect(async () => {
 		const currentUser = await restoreStoredCurrentUser();
+		dispatch(switchStage(stages.REQUEST_LINK));
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
 		}

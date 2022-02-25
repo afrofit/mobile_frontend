@@ -4,6 +4,8 @@ import {
 	resendApiSignupVerificationCode,
 	resendResetPasswordVerifyCode,
 	sendPasswordResetCode,
+	setNewPassword,
+	verifyPasswordResetCode,
 	verifySignupCode,
 } from "../../api/auth/auth_thunks";
 import {
@@ -13,9 +15,11 @@ import {
 	showGenericErrorDialog,
 } from "../reducers/uiReducer";
 import {
+	setChangePasswordSuccess,
 	setConfirmPasswordResetCodeSuccess,
 	setCurrentUserResetToken,
 	setCurrentUserToken,
+	setResendPasswordResetCodeSuccess,
 	setResetEmailSuccess,
 	setSignUpSuccess,
 	setVerifySuccess,
@@ -84,21 +88,48 @@ export function passwordResetCodeVerify(code) {
 		dispatch(hideGenericErrorDialog());
 		dispatch(setConfirmPasswordResetCodeSuccess(false));
 
-		sendPasswordResetCode(code)
+		verifyPasswordResetCode(code)
 			.then((response) => {
 				dispatch(finishedRequest());
 				return response;
 			})
 			.then((response) => {
-				const { data, ok } = response;
-				if (data && ok) {
+				if (response) {
 					dispatch(setConfirmPasswordResetCodeSuccess(true));
-					// dispatch(setCurrentUserToken(data));
-				} else if (!ok && data) {
-					throw new Error(data);
+					authFuncs.reactivateUser(response);
+					dispatch(setCurrentUserResetToken(response));
 				} else {
 					dispatch(showGenericErrorDialog("Can't create account. Retry?"));
 					throw new Error("Cannot create account");
+				}
+			})
+			.catch((error) => {
+				dispatch(showGenericErrorDialog(error.message));
+				console.error(error);
+			});
+	};
+}
+
+/** Change User Password */
+export function changeUserPassword(password) {
+	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
+		dispatch(setChangePasswordSuccess(false));
+
+		setNewPassword(password)
+			.then((response) => {
+				dispatch(finishedRequest());
+				return response;
+			})
+			.then((response) => {
+				if (response && response.data) {
+					dispatch(setChangePasswordSuccess(true));
+				} else {
+					dispatch(
+						showGenericErrorDialog("Can't change account password. Retry?")
+					);
+					throw new Error("Cannot change account password");
 				}
 			})
 			.catch((error) => {
@@ -113,7 +144,7 @@ export function resendEmailVerifyResetCode(email) {
 	return (dispatch) => {
 		dispatch(newRequest());
 		dispatch(hideGenericErrorDialog());
-		dispatch(setConfirmPasswordResetCodeSuccess(false));
+		dispatch(setResendPasswordResetCodeSuccess(false));
 
 		resendResetPasswordVerifyCode(email)
 			.then((response) => {
@@ -121,10 +152,10 @@ export function resendEmailVerifyResetCode(email) {
 				return response;
 			})
 			.then((response) => {
-				console.log("Resend Reset Code Response");
+				console.log("Resend Reset Code Response", response);
 				const { data, ok } = response;
 				if (data && ok) {
-					dispatch(setConfirmPasswordResetCodeSuccess(true));
+					dispatch(setResendPasswordResetCodeSuccess(true));
 				} else if (!ok && data) {
 					throw new Error(data);
 				} else {

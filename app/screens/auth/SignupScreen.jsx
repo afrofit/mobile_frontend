@@ -79,9 +79,9 @@ const SignupScreen = ({ navigation }) => {
 
 	const triggerSignupSuccess = () => {
 		navigation.navigate(routes.notifications.SUCCESS_SIGNUP, {
-			message: "You've been verified!",
-			instruction:
-				"Tap start when you're ready to build your fitness and find your rhythm",
+			message:
+				"We've sent a 6-digit verification code to the email you provided.",
+			instruction: "Tap continue when you've got it",
 		});
 	};
 

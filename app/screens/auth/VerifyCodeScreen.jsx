@@ -41,7 +41,6 @@ const AuthBodyContainer = styled.View`
 `;
 
 const VerifyCodeScreen = ({ navigation }) => {
-	// const [error, setError] = React.useState(null);
 	const [showSuccessModal, setShowSuccessModal] = React.useState(false);
 
 	/** Dispatches */

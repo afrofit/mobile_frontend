@@ -30,7 +30,7 @@ const AuthNavigator = () => (
 		/>
 		<Stack.Screen
 			name={routes.notifications.SUCCESS_PASSWORD_CHANGE}
-			component={FullNotifyScreen}
+			component={ActionNotifyScreen}
 		/>
 	</Stack.Navigator>
 );

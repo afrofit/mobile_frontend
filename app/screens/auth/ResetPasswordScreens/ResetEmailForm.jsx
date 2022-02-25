@@ -15,6 +15,7 @@ import { ImageBackground } from "../../../components/ImageBackground";
 import Loader from "../../../components/Loader";
 import useApi from "../../../hooks/useApi";
 import useAuth from "../../../hooks/useAuth";
+import { switchStage } from "../../../store/reducers/resetPasswordReducer";
 import { hideGenericErrorDialog } from "../../../store/reducers/uiReducer";
 import {
 	getCurrentUserResetToken,
@@ -45,15 +46,14 @@ const AuthBodyContainer = styled.View`
 	padding-top: 5px;
 `;
 
-const ResetEmailForm = ({ switchStage, stages, navigation, setEmail }) => {
+const ResetEmailForm = ({ stages, navigation, setEmail }) => {
 	const dispatch = useDispatch();
 
 	const resetEmailStatus = useSelector(getEmailResetSuccess);
-	// const currentUserResetToken = useSelector(getCurrentUserResetToken);
 
 	React.useEffect(() => {
 		if (resetEmailStatus) {
-			return switchStage(stages.VERIFY);
+			return dispatch(switchStage(stages.VERIFY));
 		}
 	}, [resetEmailStatus]);
 

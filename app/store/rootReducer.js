@@ -6,6 +6,7 @@ import userReducer from "./reducers/userReducer";
 import rankingsReducer from "./reducers/rankingsReducer";
 import contentReducer from "./reducers/contentReducer";
 import uiReducer from "./reducers/uiReducer";
+import resetPasswordReducer from "./reducers/resetPasswordReducer";
 
 export const rootReducer = combineReducers({
 	user: userReducer,
@@ -14,4 +15,5 @@ export const rootReducer = combineReducers({
 	rankings: rankingsReducer,
 	content: contentReducer,
 	ui: uiReducer,
+	resetPassword: resetPasswordReducer,
 });
