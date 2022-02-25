@@ -11,7 +11,6 @@ import { COLORS } from "../../theme/colors";
 import { DecorativeElement } from "../../components/DecorativeElement";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUserToken } from "../../store/reducers/userReducer";
-import useAuth from "../../hooks/useAuth";
 import authFuncs from "../../store/thunks/auth_functions";
 
 const NotifierContainer = styled.View`
@@ -65,14 +64,10 @@ const VerifiedNotifyScreen = ({ navigation }) => {
 	const currentUserToken = useSelector(getCurrentUserToken);
 	const dispatch = useDispatch();
 
-	// const { verifyUser } = useAuth();
-
-	// Disable Back Button
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
 
 	const dismissScreen = () => {
-		// verifyUser(currentUserToken);
 		authFuncs.updateUserInStore(dispatch, currentUserToken);
 	};
 

@@ -3,24 +3,16 @@ import { Keyboard } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import * as Yup from "yup";
-import authApi from "../../../api/auth/authApi";
 
 import AuthScreensHeader from "../../../components/AuthScreensHeader";
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
-import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
 import TextInputField from "../../../components/form/fields/TextInputField";
 import Form from "../../../components/form/Form";
 import { ImageBackground } from "../../../components/ImageBackground";
-import Loader from "../../../components/Loader";
-import useApi from "../../../hooks/useApi";
-import useAuth from "../../../hooks/useAuth";
 import { switchStage } from "../../../store/reducers/resetPasswordReducer";
 import { hideGenericErrorDialog } from "../../../store/reducers/uiReducer";
-import {
-	getCurrentUserResetToken,
-	getEmailResetSuccess,
-} from "../../../store/reducers/userReducer";
+import { getEmailResetSuccess } from "../../../store/reducers/userReducer";
 import { emailResetCode } from "../../../store/thunks/userReducerThunks";
 import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";

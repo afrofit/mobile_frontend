@@ -7,12 +7,11 @@ import PageHeaderSmall from "../../components/headers/PageHeaderSmall";
 import ScreenContainer from "../../utilities/ScreenContainer";
 import useDisableHardwareBack from "../../hooks/useDisableHardwareBack";
 
+import authFuncs from "../../store/thunks/auth_functions";
 import { COLORS } from "../../theme/colors";
 import { DecorativeElement } from "../../components/DecorativeElement";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUserToken } from "../../store/reducers/userReducer";
-import useAuth from "../../hooks/useAuth";
-import authFuncs from "../../store/thunks/auth_functions";
 
 const NotifierContainer = styled.View`
 	height: 100%;
@@ -71,7 +70,7 @@ const ActionNotifyScreen = ({ navigation, route }) => {
 	useFocusEffect(backDisabled());
 
 	const dismissScreen = () => {
-		authFuncs.updateUserInStore(dispatch, currentUserToken);
+		return authFuncs.updateUserInStore(dispatch, currentUserToken);
 	};
 
 	return (
@@ -92,12 +91,7 @@ const ActionNotifyScreen = ({ navigation, route }) => {
 					/>
 				</MidSection>
 				<BottomSection>
-					<Button
-						text="Continue"
-						onPress={dismissScreen}
-						disabled={false}
-						variant="white"
-					/>
+					<Button text="Verify me" onPress={dismissScreen} variant="white" />
 				</BottomSection>
 			</NotifierContainer>
 		</ScreenContainer>

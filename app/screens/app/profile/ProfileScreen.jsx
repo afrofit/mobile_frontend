@@ -10,25 +10,26 @@ import ProfileSubscriptionCard from "../../../components/cards/ProfileSubscripti
 import { ContentContainer } from "../../../components/ContentContainer";
 import PageHeaderLarge from "../../../components/headers/PageHeaderLarge";
 
-import { COLORS } from "../../../theme/colors";
-import ScreenContainer from "../../../utilities/ScreenContainer";
-import Spacer from "../../../utilities/Spacer";
+import authFuncs from "../../../store/thunks/auth_functions";
 import Button from "../../../components/buttons/Button";
-import useAuth from "../../../hooks/useAuth";
-import { BORDER_RADIUS_MID } from "../../../theme/globals";
+import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
+import ConfirmModal from "../../../components/modals/ConfirmModal";
+import ScreenContainer from "../../../utilities/ScreenContainer";
 import SingleInputModal from "../../../components/modals/SingleInputModal";
-import { getCurrentUser } from "../../../store/reducers/userReducer";
-import { useSelector } from "react-redux";
-import { getPerformanceData } from "../../../store/reducers/activityReducer";
+import Spacer from "../../../utilities/Spacer";
+import subscriptionApi from "../../../api/subscription/subscriptionApi";
+
+import { BORDER_RADIUS_MID } from "../../../theme/globals";
+import { COLORS } from "../../../theme/colors";
 import { formatStatsNumbers } from "../../../utilities/formatters";
+import { getCurrentUser } from "../../../store/reducers/userReducer";
+import { getPerformanceData } from "../../../store/reducers/activityReducer";
 import {
 	getCurrentUserSubscription,
 	resetSubscription,
 	setSubscription,
 } from "../../../store/reducers/subscriptionReducer";
-import subscriptionApi from "../../../api/subscription/subscriptionApi";
-import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
-import ConfirmModal from "../../../components/modals/ConfirmModal";
+import { useSelector } from "react-redux";
 
 const Scroller = styled.ScrollView`
 	max-height: 100%;
@@ -46,9 +47,6 @@ const UserIdText = styled.Text`
 
 const ProfileScreen = ({}) => {
 	const dispatch = useDispatch();
-	/*
-	 *useState for errors, modals etc
-	 */
 
 	const [error, setError] = React.useState();
 
@@ -64,7 +62,7 @@ const ProfileScreen = ({}) => {
 		totalDaysActive,
 	} = totalUserStats;
 
-	const { logOut } = useAuth();
+	authFuncs.logOut(dispatch);
 
 	const [editingUsername, setEditingUsername] = React.useState(false);
 
@@ -86,9 +84,7 @@ const ProfileScreen = ({}) => {
 		value: "",
 	});
 
-	/*
-	 *Create Subscription Flow
-	 */
+	/** Create Subscription Flow */
 
 	const handleCreateSubscription = async (value) => {
 		switch (value) {

@@ -5,7 +5,6 @@ import styled from "styled-components/native";
 import { Keyboard } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
-import authApi from "../../../api/auth/authApi";
 import AuthScreensHeader from "../../../components/AuthScreensHeader";
 import Button from "../../../components/buttons/Button";
 import ClearButton from "../../../components/buttons/ClearButton";
@@ -14,16 +13,11 @@ import PasswordInputField from "../../../components/form/fields/PasswordInputFie
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
-import useApi from "../../../hooks/useApi";
-import useAuth from "../../../hooks/useAuth";
 
 import { COLORS } from "../../../theme/colors";
 import { hideGenericErrorDialog } from "../../../store/reducers/uiReducer";
 import { ImageBackground } from "../../../components/ImageBackground";
-import {
-	getChangePasswordSuccess,
-	setChangePasswordSuccess,
-} from "../../../store/reducers/userReducer";
+import { getChangePasswordSuccess } from "../../../store/reducers/userReducer";
 import { changeUserPassword } from "../../../store/thunks/userReducerThunks";
 
 const initialValues = {

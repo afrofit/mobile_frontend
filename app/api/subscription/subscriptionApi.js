@@ -1,19 +1,18 @@
 import apiClient from "../client";
 
-// Create a new subscription
-const createSubscription = (subscriptionData) =>
+export const subscriptionCreate = (subscriptionData) =>
 	apiClient.post("/subscription/create-subscription", { subscriptionData });
 
-const cancelSubscription = (subId) =>
+export const subscriptionCancel = (subId) =>
 	apiClient.post("/subscription/expire-subscription", {
 		subscriptionId: subId,
 	});
 
-const getCurrentSubscription = () =>
+export const getCurrentSubscription = () =>
 	apiClient.get("/subscription/get-subscription");
 
 export default {
-	createSubscription,
-	cancelSubscription,
+	subscriptionCreate,
+	subscriptionCancel,
 	getCurrentSubscription,
 };

@@ -4,12 +4,16 @@ const initialState = {
 	currentStory: null,
 	currentChapter: null,
 	currentChapters: null,
+	stories: null,
 };
 
 const contentSlice = createSlice({
 	name: "content",
 	initialState,
 	reducers: {
+		setAllStories(state, { payload }) {
+			state.stories = payload;
+		},
 		setCurrentStory(state, { payload }) {
 			state.currentStory = payload;
 		},
@@ -67,6 +71,7 @@ const contentSlice = createSlice({
 });
 
 export const {
+	setAllStories,
 	setCurrentStory,
 	setCurrentChapter,
 	setCurrentChapters,
@@ -78,10 +83,13 @@ export const {
 	unsetCurrentChapters,
 } = contentSlice.actions;
 
-/**Selectors */
+/** Selectors */
+
+export const getAllStories = (state) => state.content.stories;
 export const getCurrentStory = (state) => state.content.currentStory;
 export const getCurrentStoryChapter = (state) => state.content.currentChapter;
 export const getCurrentStoryChapters = (state) => state.content.currentChapters;
 
-/**Reducers */
+/** Reducers */
+
 export default contentSlice.reducer;

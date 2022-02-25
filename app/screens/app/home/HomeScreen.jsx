@@ -4,15 +4,11 @@ import { useSelector } from "react-redux";
 
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
-import contentApi from "../../../api/content/contentApi";
-import FormErrorMessage from "../../../components/form/fields/FormErrorMessage";
 import HomeStatsCard from "../../../components/cards/HomeStatsCard";
-import Loader from "../../../components/Loader";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
-import subscriptionApi from "../../../api/subscription/subscriptionApi";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
 
 import { ContentContainer } from "../../../components/ContentContainer";
@@ -25,12 +21,11 @@ import {
 import {
 	getCurrentUserSubscription,
 	requestCurrentUserSubscription,
-	setSubscription,
 } from "../../../store/reducers/subscriptionReducer";
-import {
-	getCurrentUser,
-	setVerifySuccess,
-} from "../../../store/reducers/userReducer";
+import { getCurrentUser } from "../../../store/reducers/userReducer";
+import { storiesFetchAll } from "../../../store/thunks/contentThunks";
+import { getAllStories } from "../../../store/reducers/contentReducer";
+import { createSubscription } from "../../../store/thunks/subscriptionThunks";
 
 const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
@@ -40,23 +35,14 @@ const HomeScreen = ({ navigation }) => {
 	const currentUser = useSelector(getCurrentUser);
 	const currentSubscription = useSelector(getCurrentUserSubscription);
 	const todaysActivity = useSelector(getDailyActivity);
+	const allStories = useSelector(getAllStories);
 
 	/** Fetch relevant data from selectors */
 
 	const { username, hasTrial } = currentUser;
 	const { caloriesBurned, bodyMoves } = todaysActivity;
 
-	/** useState for errors, modals etc */
-
-	const [error, setError] = React.useState();
-	const [stories, setStories] = React.useState([]);
-
 	const [showTrialModal, setShowTrialModal] = React.useState(false);
-
-	/** Create Subscription API flow here */
-
-	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
-	const fetchStoriesApi = useApi(contentApi.getStories);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
 		React.useState(false);
@@ -70,11 +56,11 @@ const HomeScreen = ({ navigation }) => {
 	});
 
 	/** Effects */
+
 	React.useEffect(() => {
-		dispatch(setVerifySuccess(false));
 		dispatch(requestUserDailyActivity());
 		dispatch(requestCurrentUserSubscription());
-		fetchAllStories();
+		dispatch(storiesFetchAll());
 	}, []);
 
 	/** General functions */
@@ -92,7 +78,7 @@ const HomeScreen = ({ navigation }) => {
 		navigation.navigate(routes.home.STORY_INTRO, { contentStoryId });
 	};
 
-	/**Create Subscription Flow */
+	/** Create Subscription Flow */
 
 	const handleCreateSubscription = async (value) => {
 		switch (value) {
@@ -138,62 +124,14 @@ const HomeScreen = ({ navigation }) => {
 		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
 	};
 
-	const fetchAllStories = async () => {
-		const result = await fetchStoriesApi.request();
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		const { data } = result;
-
-		const sortedStories = data.sort((a, b) =>
-			a.storyOrderNumber < b.storyOrderNumber
-				? -1
-				: Number(a.storyOrderNumber > b.storyOrderNumber)
-		);
-		// console.log(
-		// 	"Stories",
-		// 	sortedStories.map((story) => ({
-		// 		title: story.title,
-		// 		completed: story.completed,
-		// 		started: story.started,
-		// 		totalBodyMoves: story.totalBodyMoves,
-		// 		totalTargetActualBodyMoves: story.totalTargetActualBodyMoves,
-		// 		totalTargetBodyMoves: story.totalTargetBodyMoves,
-		// 		totalTargetUserTimeInMillis: story.totalTargetUserTimeInMillis,
-		// 		totalUserTimeSpentInMillis: story.totalUserTimeSpentInMillis,
-		// 	}))
-		// );
-		setStories(sortedStories);
-	};
-
 	const triggerCreateSubscription = async (value) => {
-		const result = await createSubscriptionApi.request(value);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		dispatch(setSubscription(result.data));
+		dispatch(createSubscription(value));
 		setShowConfirmModal(!showConfirmModal);
 		return setShowChooseSubscriptionModal(false);
 	};
 
 	return (
 		<>
-			<Loader
-				visible={createSubscriptionApi.loading || fetchStoriesApi.loading}
-				message="Loading your content"
-			/>
 			{showConfirmModal.show && (
 				<ConfirmModal
 					onCancelClicked={() => {
@@ -222,17 +160,18 @@ const HomeScreen = ({ navigation }) => {
 				/>
 			)}
 			<ScreenContainer backgroundColor={COLORS.dark} noTouch={true}>
-				<FormErrorMessage error={error} />
 				<ContentContainer>
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />
 					<HomeStatsCard
 						calBurned={formatStatsNumbers(caloriesBurned)}
 						bodyMovements={formatStatsNumbers(bodyMoves)}
 					/>
-					<StoryListSection
-						stories={stories}
-						triggerNavigate={checkSubscriptionStatus}
-					/>
+					{allStories && allStories.length && (
+						<StoryListSection
+							stories={allStories}
+							triggerNavigate={checkSubscriptionStatus}
+						/>
+					)}
 				</ContentContainer>
 			</ScreenContainer>
 		</>
