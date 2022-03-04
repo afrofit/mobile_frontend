@@ -19,9 +19,9 @@ const saveUserContentPlayedActivity = (contentPlayedData) =>
 		contentPlayedData,
 	});
 
-const resetStoryContentActivity = (storyData) =>
+const resetStoryContentActivity = (resetContentData) =>
 	apiClient.post("/performance/reset-story-content-activity", {
-		storyData,
+		resetContentData,
 	});
 
 const getUserActivity = () => apiClient.get("/performance/get-user-activity");
@@ -32,6 +32,13 @@ const getUserdailyActivity = () =>
 const getUserPerformanceData = () =>
 	apiClient.get("/performance/get-user-performance-data");
 
+// Marathon Stuff
+const getCurrentMarathonData = () =>
+	apiClient.get("/marathon/get-current-marathon-data");
+
+const saveMarathonMarathonData = (data) =>
+	apiClient.save("/marathon/save-user-marathon-activity", { data });
+
 export default {
 	saveUserDailyActivity,
 	saveUserPerformanceActivity,
@@ -41,4 +48,5 @@ export default {
 	getUserdailyActivity,
 	getUserPerformanceData,
 	resetStoryContentActivity,
+	getCurrentMarathonData,
 };

@@ -180,6 +180,36 @@ export function storeUserContentActivityData(payload) {
 	};
 }
 
+export function resetStoryContentActivityData(payload) {
+	return (dispatch) => {
+		console.log("Chapter Order Number", payload.chapterOrderNumber);
+		activityApi
+			.resetStoryContentActivity(payload)
+			.then((response) => {
+				dispatch(finishedRequest());
+				return response;
+			})
+			.then((response) => {
+				const { data, ok } = response;
+
+				if (data && ok) {
+					dispatch(updateCurrentStory(data.story));
+					dispatch(updateCurrentChapters(data.chapters));
+					return dispatch(setContentUpdated(true));
+				} else if (!ok && data) {
+					throw new Error(data);
+				} else {
+					dispatch(showGenericErrorDialog("Can't reset this story."));
+					throw new Error("Cannot reset this story.");
+				}
+			})
+			.catch((error) => {
+				dispatch(showGenericErrorDialog(error.message));
+				console.error(error);
+			});
+	};
+}
+
 export function saveUserActivityData(payload) {
 	return (dispatch) => {
 		saveUserActivity(payload)

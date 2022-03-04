@@ -12,7 +12,6 @@ const Scroller = styled.ScrollView`
 `;
 
 const Container = styled.View`
-	/* background-color: red; */
 	width: 95%;
 	flex: 1;
 `;

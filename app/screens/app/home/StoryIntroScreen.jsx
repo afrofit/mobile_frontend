@@ -28,6 +28,10 @@ import {
 	selectVideoLoading,
 	setVideoLoading,
 } from "../../../store/reducers/uiReducer";
+import {
+	resetStoryContentActivityData,
+	storeUserContentActivityData,
+} from "../../../store/thunks/activityThunks";
 
 const Container = styled.View`
 	height: 100%;
@@ -129,6 +133,7 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	const handleStartStory = async () => {
 		if (currentStory.completed) {
 			// Trigger story restart
+			dispatch(resetStoryContentActivityData(contentStoryId));
 		}
 		await handleUnloadVideo();
 		navigation.navigate(routes.home.STORY, { contentStoryId });
