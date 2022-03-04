@@ -1,9 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {
-	fetchUserActivity,
-	saveUserActivity,
-} from "../../api/activity/activityThunkControllers";
-import { updateCurrentChapter, updateCurrentChapters } from "./contentReducer";
 
 const initialState = {
 	dailyActivity: {
@@ -16,6 +11,7 @@ const initialState = {
 		totalTimeDancedInMilliseconds: 0,
 		totalDaysActive: 0,
 	},
+	contentUpdated: false,
 };
 
 const performanceSlice = createSlice({
@@ -32,25 +28,11 @@ const performanceSlice = createSlice({
 				bodyMoves: (state.dailyActivity.bodyMoves += bodyMoves),
 			};
 		},
-		initializeTotalUserActivity(state, { payload }) {
-			const {
-				totalBodyMoves,
-				totalCaloriesBurned,
-				totalDaysActive,
-				totalTimeDancedInMilliseconds,
-			} = payload;
-			state.userStats = {
-				totalBodyMoves,
-				totalCaloriesBurned,
-				totalTimeDancedInMilliseconds,
-				totalDaysActive,
-			};
+		setContentUpdated(state, { payload }) {
+			state.contentUpdated = payload;
 		},
-		updateTotalUserActivity(state, { payload }) {
-			state.userStats.totalBodyMoves += payload.totalBodyMoves;
-			state.userStats.totalCaloriesBurned += payload.totalCaloriesBurned;
-			state.userStats.totalTimeDancedInMilliseconds += payload.totalDaysActive;
-			state.userStats.totalDaysActive += payload.totalTimeDancedInMilliseconds;
+		setUserPerformanceData(state, { payload }) {
+			state.userStats = payload;
 		},
 		resetUserDailyActivity(state) {
 			state.dailyActivity = { caloriesBurned: 0, bodyMoves: 0 };
@@ -69,82 +51,15 @@ const performanceSlice = createSlice({
 export const {
 	setUserDailyActivity,
 	updateUserDailyActivity,
-	initializeTotalUserActivity,
+	setUserPerformanceData,
 	resetUserDailyActivity,
+	setContentUpdated,
 } = performanceSlice.actions;
 
 /**Selectors */
 export const getDailyActivity = (state) => state.activity.dailyActivity;
 export const getPerformanceData = (state) => state.activity.userStats;
-
-/**Thunks */
-export function requestUserDailyActivity() {
-	return (dispatch) => {
-		fetchUserActivity().then((response) => {
-			if (response) {
-				const { daily, performance } = response;
-				const { bodyMoves, caloriesBurned } = daily;
-				const {
-					totalCaloriesBurned,
-					totalBodyMoves,
-					totalTimeDancedInMilliseconds,
-					totalDaysActive,
-				} = performance;
-				dispatch(
-					setUserDailyActivity({
-						bodyMoves,
-						caloriesBurned,
-					})
-				);
-				return dispatch(
-					initializeTotalUserActivity({
-						totalCaloriesBurned,
-						totalBodyMoves,
-						totalTimeDancedInMilliseconds,
-						totalDaysActive,
-					})
-				);
-			}
-			return dispatch(resetUserDailyActivity());
-		});
-	};
-}
-
-export function saveUserActivityData(payload) {
-	return (dispatch) => {
-		saveUserActivity(payload)
-			.then((response) => {
-				// console.log("Activity response from Thunk", res);
-				const { chapter, daily, story, performance } = response;
-				// console.log("Story from Thunk", story);
-				console.log("For upstreaming...");
-				const {
-					totalCaloriesBurned,
-					totalBodyMoves,
-					totalTimeDancedInMilliseconds,
-					totalDaysActive,
-				} = performance;
-				const { bodyMoves, caloriesBurned } = daily;
-				dispatch(updateCurrentChapters(payload));
-				dispatch(
-					initializeTotalUserActivity({
-						totalCaloriesBurned,
-						totalBodyMoves,
-						totalTimeDancedInMilliseconds,
-						totalDaysActive,
-					})
-				);
-				dispatch(
-					setUserDailyActivity({
-						bodyMoves,
-						caloriesBurned,
-					})
-				);
-				return dispatch(updateCurrentChapter(chapter));
-			})
-			.catch((error) => console.error(error));
-	};
-}
+export const getContentUpdated = (state) => state.activity.contentUpdated;
 
 /**Reducer */
 export default performanceSlice.reducer;

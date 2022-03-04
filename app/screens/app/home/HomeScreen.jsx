@@ -10,13 +10,15 @@ import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { ContentContainer } from "../../../components/ContentContainer";
 import { COLORS } from "../../../theme/colors";
 import { formatStatsNumbers } from "../../../utilities/formatters";
 import {
+	getContentUpdated,
 	getDailyActivity,
-	requestUserDailyActivity,
+	setContentUpdated,
 } from "../../../store/reducers/activityReducer";
 import {
 	getCurrentUserSubscription,
@@ -26,6 +28,10 @@ import { getCurrentUser } from "../../../store/reducers/userReducer";
 import { storiesFetchAll } from "../../../store/thunks/contentThunks";
 import { getAllStories } from "../../../store/reducers/contentReducer";
 import { createSubscription } from "../../../store/thunks/subscriptionThunks";
+import { fetchUserDailyActivity } from "../../../store/thunks/activityThunks";
+import useCreateDialog from "../../../hooks/useCreateDialog";
+import ConfirmDialog from "../../../components/modals/ConfirmDialog";
+import Button from "../../../components/buttons/Button";
 
 const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
@@ -36,6 +42,7 @@ const HomeScreen = ({ navigation }) => {
 	const currentSubscription = useSelector(getCurrentUserSubscription);
 	const todaysActivity = useSelector(getDailyActivity);
 	const allStories = useSelector(getAllStories);
+	const contentUpdated = useSelector(getContentUpdated);
 
 	/** Fetch relevant data from selectors */
 
@@ -57,11 +64,25 @@ const HomeScreen = ({ navigation }) => {
 
 	/** Effects */
 
-	React.useEffect(() => {
-		dispatch(requestUserDailyActivity());
+	const getData = () => {
+		dispatch(fetchUserDailyActivity());
 		dispatch(requestCurrentUserSubscription());
 		dispatch(storiesFetchAll());
-	}, []);
+	};
+
+	useFocusEffect(
+		React.useCallback(() => {
+			getData();
+
+			return () => {
+				dispatch(setContentUpdated(false));
+			};
+		}, [])
+	);
+
+	React.useEffect(() => {
+		// console.log("Stories", allStories);
+	}, [dispatch]);
 
 	/** General functions */
 
@@ -164,7 +185,7 @@ const HomeScreen = ({ navigation }) => {
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />
 					<HomeStatsCard
 						calBurned={formatStatsNumbers(caloriesBurned)}
-						bodyMovements={formatStatsNumbers(bodyMoves)}
+						bodyMovements={formatStatsNumbers(bodyMoves, true)}
 					/>
 					{allStories && allStories.length && (
 						<StoryListSection

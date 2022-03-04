@@ -17,13 +17,15 @@ const contentSlice = createSlice({
 		setCurrentStory(state, { payload }) {
 			state.currentStory = payload;
 		},
+
 		setCurrentChapters(state, { payload }) {
 			state.currentChapters = payload;
 		},
 		setCurrentChapter(state, { payload }) {
-			state.currentChapter = state.currentChapters.find(
+			const result = state.currentChapters.find(
 				(chapter) => chapter.contentChapterId === payload
 			);
+			state.currentChapter = result;
 		},
 		updateCurrentChapters(state, { payload }) {
 			if (payload) {

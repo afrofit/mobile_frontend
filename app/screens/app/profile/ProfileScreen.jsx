@@ -1,34 +1,35 @@
 import * as React from "react";
+import parseMillis from "parse-ms";
 import styled from "styled-components/native";
+
 import { StyleSheet } from "react-native";
 import { useDispatch } from "react-redux";
-import parseMillis from "parse-ms";
-
-import ProfileNameCard from "../../../components/cards/ProfileNameCard";
-import ProfileStatsCard from "../../../components/cards/ProfileStatsCard";
-import ProfileSubscriptionCard from "../../../components/cards/ProfileSubscriptionCard";
-import { ContentContainer } from "../../../components/ContentContainer";
-import PageHeaderLarge from "../../../components/headers/PageHeaderLarge";
 
 import authFuncs from "../../../store/thunks/auth_functions";
 import Button from "../../../components/buttons/Button";
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
+import PageHeaderLarge from "../../../components/headers/PageHeaderLarge";
+import ProfileNameCard from "../../../components/cards/ProfileNameCard";
+import ProfileStatsCard from "../../../components/cards/ProfileStatsCard";
+import ProfileSubscriptionCard from "../../../components/cards/ProfileSubscriptionCard";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import SingleInputModal from "../../../components/modals/SingleInputModal";
 import Spacer from "../../../utilities/Spacer";
-import subscriptionApi from "../../../api/subscription/subscriptionApi";
 
 import { BORDER_RADIUS_MID } from "../../../theme/globals";
+import {
+	cancelSubscription,
+	createSubscription,
+} from "../../../store/thunks/subscriptionThunks";
 import { COLORS } from "../../../theme/colors";
+import { ContentContainer } from "../../../components/ContentContainer";
+import { fetchUserPerformanceData } from "../../../store/thunks/activityThunks";
 import { formatStatsNumbers } from "../../../utilities/formatters";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
+import { getCurrentUserSubscription } from "../../../store/reducers/subscriptionReducer";
 import { getPerformanceData } from "../../../store/reducers/activityReducer";
-import {
-	getCurrentUserSubscription,
-	resetSubscription,
-	setSubscription,
-} from "../../../store/reducers/subscriptionReducer";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
 const Scroller = styled.ScrollView`
@@ -48,8 +49,6 @@ const UserIdText = styled.Text`
 const ProfileScreen = ({}) => {
 	const dispatch = useDispatch();
 
-	const [error, setError] = React.useState();
-
 	const currentUser = useSelector(getCurrentUser);
 	const totalUserStats = useSelector(getPerformanceData);
 	const subscription = useSelector(getCurrentUserSubscription);
@@ -62,16 +61,13 @@ const ProfileScreen = ({}) => {
 		totalDaysActive,
 	} = totalUserStats;
 
-	authFuncs.logOut(dispatch);
-
 	const [editingUsername, setEditingUsername] = React.useState(false);
 
-	/*
-	 *Create Subscription / Unsubscribe API flow here
-	 */
-
-	const createSubscriptionApi = useApi(subscriptionApi.createSubscription);
-	const cancelSubscriptionApi = useApi(subscriptionApi.cancelSubscription);
+	useFocusEffect(
+		React.useCallback(() => {
+			dispatch(fetchUserPerformanceData());
+		}, [])
+	);
 
 	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
 		React.useState(false);
@@ -85,6 +81,7 @@ const ProfileScreen = ({}) => {
 	});
 
 	/** Create Subscription Flow */
+	const { hours } = parseMillis(+totalTimeDancedInMilliseconds);
 
 	const handleCreateSubscription = async (value) => {
 		switch (value) {
@@ -131,38 +128,18 @@ const ProfileScreen = ({}) => {
 	};
 
 	const triggerCreateSubscription = async (value) => {
-		// console.log("Value", value);
-		const result = await createSubscriptionApi.request(value);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		dispatch(setSubscription(result.data));
+		dispatch(createSubscription(value));
 		setShowConfirmModal(!showConfirmModal);
 		return setShowChooseSubscriptionModal(false);
 	};
 
 	const handleCancelSubscription = async (subscriptionId) => {
-		const result = await cancelSubscriptionApi.request(subscriptionId);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		// console.log("Subscription cancelled? ", result.data);
-		dispatch(resetSubscription());
+		dispatch(cancelSubscription(subscriptionId));
 	};
 
-	const { hours } = parseMillis(totalTimeDancedInMilliseconds);
+	const handleLogout = () => {
+		authFuncs.logOut(dispatch);
+	};
 
 	return (
 		<>
@@ -210,7 +187,7 @@ const ProfileScreen = ({}) => {
 						/>
 						<ProfileStatsCard
 							calBurned={formatStatsNumbers(totalCaloriesBurned)}
-							bodyMoves={formatStatsNumbers(totalBodyMoves)}
+							bodyMoves={formatStatsNumbers(totalBodyMoves, true)}
 							hoursDanced={hours}
 							daysActive={totalDaysActive}
 						/>
@@ -221,8 +198,7 @@ const ProfileScreen = ({}) => {
 								setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
 							}
 						/>
-						{/* <Spacer /> */}
-						<Button text="Logout" variant="red" onPress={() => logOut()} />
+						<Button text="Logout" variant="red" onPress={handleLogout} />
 					</Scroller>
 					<Spacer h="10px" />
 					<UserIdText>USER ID: {userId}</UserIdText>

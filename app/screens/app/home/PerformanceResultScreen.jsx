@@ -65,7 +65,7 @@ const VideoContainer = styled.View`
 `;
 
 const PerformanceResultScreen = ({ navigation, route }) => {
-	const { success, videoUrl, message } = route.params.data;
+	const { success, videoUrl, message, contentStoryId } = route.params.data;
 
 	/** Local State */
 	const [videoStatus, setVideoStatus] = React.useState();
@@ -85,6 +85,13 @@ const PerformanceResultScreen = ({ navigation, route }) => {
 		}
 		setVideoStatus(status);
 	};
+
+	const handleProceed = () => {
+		success
+			? navigation.push(routes.home.STORY, { contentStoryId })
+			: navigation.navigate(routes.ROOT, { contentStoryId });
+	};
+
 	return (
 		<>
 			<Loader visible={videoLoading} message="Loading content" />
@@ -101,13 +108,15 @@ const PerformanceResultScreen = ({ navigation, route }) => {
 					<Button
 						variant="white"
 						text={success ? "Continue" : "Quit Chapter"}
-						onPress={() => navigation.navigate(routes.home.STORY)}
+						// onPress={() => navigation.navigate(routes.home.STORY)}
+						onPress={handleProceed}
 					/>
 					<Button
 						variant="red"
 						text={success ? "Exit Story" : "Retry Chapter"}
 						onPress={() =>
-							navigation.navigate(success ? routes.ROOT : routes.home.STORY)
+							// navigation.navigate(success ? routes.ROOT : routes.home.STORY)
+							handleProceed
 						}
 					/>
 					<Spacer />

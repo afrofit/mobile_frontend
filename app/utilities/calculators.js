@@ -36,3 +36,14 @@ export const calculateTargetSteps = (targetMoves) => {
 export const calculateActualSteps = (displaySteps) => {
 	return Math.floor(displaySteps / 3);
 };
+
+export const calculateCaloriesBurned = (bodyMovesCount) => {
+	const CAL_BURN_RATE_PER_MOVE = 0.00175;
+	console.log(
+		"Body Moves Received",
+		bodyMovesCount,
+		bodyMovesCount * CAL_BURN_RATE_PER_MOVE
+	);
+
+	return bodyMovesCount * CAL_BURN_RATE_PER_MOVE;
+};

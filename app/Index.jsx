@@ -13,6 +13,7 @@ import {
 	getCurrentUser,
 	setCurrentUser,
 	setVerifySuccess,
+	unsetCurrentUser,
 } from "./store/reducers/userReducer";
 import { restoreStoredCurrentUser } from "./utilities/startup_scripts";
 import {
@@ -32,9 +33,11 @@ const Index = () => {
 	const isLoading = useSelector(selectUiIsLoading);
 	const videoLoading = useSelector(selectVideoLoading);
 	const error = useSelector(selectShowGenericErrorDialog);
-	const currentUser = useSelector(getCurrentUser);
+	const currentUserFromStore = useSelector(getCurrentUser);
 
-	// authFuncs.logOut(dispatch);
+	React.useEffect(() => {
+		// authFuncs.logOut(dispatch);
+	}, []);
 
 	React.useEffect(async () => {
 		const currentUser = await restoreStoredCurrentUser();
@@ -43,6 +46,8 @@ const Index = () => {
 
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
+		} else if (!currentUser) {
+			dispatch(unsetCurrentUser());
 		}
 	}, []);
 
@@ -51,11 +56,13 @@ const Index = () => {
 			<GenericErrorMessage error={error} />
 			<Loader visible={isLoading | videoLoading} />
 			<StatusBar style="auto" />
-			{currentUser && currentUser.isVerified && <AppNavigator />}
-			{currentUser && currentUser.isRegistered && !currentUser.isVerified && (
-				<VerifyEmailNavigator />
+			{currentUserFromStore && currentUserFromStore.isVerified && (
+				<AppNavigator />
 			)}
-			{!currentUser && <AuthNavigator />}
+			{currentUserFromStore &&
+				currentUserFromStore.isRegistered &&
+				!currentUserFromStore.isVerified && <VerifyEmailNavigator />}
+			{!currentUserFromStore && <AuthNavigator />}
 		</LoadApp>
 	);
 };

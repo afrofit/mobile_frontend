@@ -3,9 +3,9 @@ import apiClient from "../client";
 export const subscriptionCreate = (subscriptionData) =>
 	apiClient.post("/subscription/create-subscription", { subscriptionData });
 
-export const subscriptionCancel = (subId) =>
+export const subscriptionCancel = (subscriptionId) =>
 	apiClient.post("/subscription/expire-subscription", {
-		subscriptionId: subId,
+		subscriptionId,
 	});
 
 export const getCurrentSubscription = () =>

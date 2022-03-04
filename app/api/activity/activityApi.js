@@ -4,8 +4,41 @@ import apiClient from "../client";
 const saveUserActivity = (activityData) =>
 	apiClient.post("/performance/save-user-activity", { activityData });
 
-const getUserActivity = () => {
-	apiClient.get("/performance/get-user-activity");
-};
+const saveUserDailyActivity = (dailyActivityData) =>
+	apiClient.post("/performance/save-user-daily-activity", {
+		dailyActivityData,
+	});
 
-export default { saveUserActivity, getUserActivity };
+const saveUserPerformanceActivity = (performanceData) =>
+	apiClient.post("/performance/save-user-performance-data", {
+		performanceData,
+	});
+
+const saveUserContentPlayedActivity = (contentPlayedData) =>
+	apiClient.post("/performance/save-user-content-played", {
+		contentPlayedData,
+	});
+
+const resetStoryContentActivity = (storyData) =>
+	apiClient.post("/performance/reset-story-content-activity", {
+		storyData,
+	});
+
+const getUserActivity = () => apiClient.get("/performance/get-user-activity");
+
+const getUserdailyActivity = () =>
+	apiClient.get("/performance/get-user-daily-activity");
+
+const getUserPerformanceData = () =>
+	apiClient.get("/performance/get-user-performance-data");
+
+export default {
+	saveUserDailyActivity,
+	saveUserPerformanceActivity,
+	saveUserActivity,
+	saveUserContentPlayedActivity,
+	getUserActivity,
+	getUserdailyActivity,
+	getUserPerformanceData,
+	resetStoryContentActivity,
+};

@@ -13,9 +13,13 @@ const updateUserInStore = (dispatch, authToken) => {
 };
 
 const logOut = (dispatch) => {
-	authStorage.removeToken();
-	authStorage.removeResetToken();
-	dispatch(unsetCurrentUser());
+	try {
+		dispatch(unsetCurrentUser());
+		authStorage.removeToken();
+		authStorage.removeResetToken();
+	} catch (error) {
+		console.error(error);
+	}
 };
 
 const reactivateUser = (authResetToken) => {

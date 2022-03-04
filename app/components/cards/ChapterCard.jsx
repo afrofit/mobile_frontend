@@ -49,38 +49,54 @@ const ChapterFont = styled(StatusFont)`
 	margin-bottom: 5px;
 `;
 
-const ChapterCard = ({ onPress, number = 0, bodyMoves, targetBodyMoves }) => {
+const ChapterCard = ({
+	onPress,
+	number = 0,
+	bodyMoves,
+	targetBodyMoves,
+	completed,
+	started,
+	disabled,
+}) => {
 	return (
-		<Container onPress={onPress}>
+		<Container disabled={disabled} onPress={onPress}>
 			<Top>
 				<ChapterFont>Play Chapter {number}</ChapterFont>
 			</Top>
 			<BottomPartOfCard
 				bodyMoves={bodyMoves}
 				targetBodyMoves={targetBodyMoves}
+				completed={completed}
+				started={started}
 			/>
 		</Container>
 	);
 };
 
-const BottomPartOfCard = ({ bodyMoves, targetBodyMoves }) => {
+const BottomPartOfCard = ({
+	bodyMoves,
+	targetBodyMoves,
+	completed,
+	started,
+}) => {
 	const generateBackgroundColor = React.useCallback(() => {
-		if (bodyMoves === 0) return COLORS.yellow;
-		else if (bodyMoves > 0 && bodyMoves < targetBodyMoves) return COLORS.bronze;
-		return COLORS.grayDarker;
+		if (!started && !completed) return COLORS.yellow;
+		else if (started && !completed) return COLORS.bronze;
+		else if (started && completed) return COLORS.grayDarker;
 	}, [bodyMoves, targetBodyMoves]);
 
-	const PERCENTAGE_COMPLETE = React.useCallback(
-		calculatePercentageCompleted(bodyMoves, targetBodyMoves),
-		[bodyMoves, targetBodyMoves]
+	const PERCENTAGE_COMPLETED = calculatePercentageCompleted(
+		bodyMoves,
+		targetBodyMoves
 	);
+
 	return (
 		<>
 			<Bottom color={generateBackgroundColor}>
-				{bodyMoves === targetBodyMoves && <StatusFont>Finished</StatusFont>}
-				{bodyMoves === 0 && <StatusFont>Fresh</StatusFont>}
-				{bodyMoves > 0 && bodyMoves < targetBodyMoves && (
-					<StatusFont>{`${PERCENTAGE_COMPLETE}% COMPLETE`}</StatusFont>
+				{started && completed && <StatusFont>Finished</StatusFont>}
+				{!started && !completed && <StatusFont>Fresh</StatusFont>}
+				{started && !completed && (
+					<StatusFont>{`${PERCENTAGE_COMPLETED}% COMPLETE`}</StatusFont>
 				)}
 			</Bottom>
 		</>
