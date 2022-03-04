@@ -1,21 +1,25 @@
 import authStorage from "../../api/storage";
 import jwtDecode from "jwt-decode";
-import { setCurrentUser } from "../reducers/userReducer";
+import { setCurrentUser, unsetCurrentUser } from "../reducers/userReducer";
 
 const updateUserInStore = (dispatch, authToken) => {
 	const user = jwtDecode(authToken);
 	try {
 		authStorage.storeToken(authToken);
-		dispatch(setCurrentUser(user));
+		return dispatch(setCurrentUser(user));
 	} catch (error) {
 		console.error(error);
 	}
 };
 
-const logOut = () => {
-	authStorage.removeToken();
-	authStorage.removeResetToken();
-	dispatch(unsetCurrentUser());
+const logOut = (dispatch) => {
+	try {
+		dispatch(unsetCurrentUser());
+		authStorage.removeToken();
+		authStorage.removeResetToken();
+	} catch (error) {
+		console.error(error);
+	}
 };
 
 const reactivateUser = (authResetToken) => {

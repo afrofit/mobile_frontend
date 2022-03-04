@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useFocusEffect } from "@react-navigation/native";
+
 import { BackHandler } from "react-native";
 
 const useDisableHardwareBack = () => {

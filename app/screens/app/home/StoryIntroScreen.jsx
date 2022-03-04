@@ -1,28 +1,37 @@
 import * as React from "react";
 import styled from "styled-components/native";
-import { Video } from "expo-av";
+
 import { StyleSheet } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
+import { useFocusEffect } from "@react-navigation/native";
+import { Video } from "expo-av";
 
 import Button from "../../../components/buttons/Button";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
-import ThreeStarsElement from "../../../elements/ThreeStarsElement";
-import { COLORS } from "../../../theme/colors";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import Spacer from "../../../utilities/Spacer";
-import { DEVICE_WIDTH, DEVICE_HEIGHT } from "../../../theme/globals";
+import ThreeStarsElement from "../../../elements/ThreeStarsElement";
 import useDisableHardwareBack from "../../../hooks/useDisableHardwareBack";
 import useVideo from "../../../hooks/useVideo";
-import Loader from "../../../components/Loader";
-import contentApi from "../../../api/content/contentApi";
+
+import { COLORS } from "../../../theme/colors";
+import { DEVICE_WIDTH, DEVICE_HEIGHT } from "../../../theme/globals";
 import {
 	getCurrentStory,
-	setCurrentChapters,
-	setCurrentStory,
 	unsetCurrentStory,
 } from "../../../store/reducers/contentReducer";
+import { storyDetailsFetch } from "../../../store/thunks/contentThunks";
+import {
+	finishedRequest,
+	newRequest,
+	selectVideoLoading,
+	setVideoLoading,
+} from "../../../store/reducers/uiReducer";
+import {
+	resetStoryContentActivityData,
+	storeUserContentActivityData,
+} from "../../../store/thunks/activityThunks";
 
 const Container = styled.View`
 	height: 100%;
@@ -76,78 +85,42 @@ const InstructionTextWhite = styled(InstructionText)`
 const StoryIntroScreen = ({ navigation, route }) => {
 	const { contentStoryId } = route.params;
 	const [videoStatus, setVideoStatus] = React.useState();
-	const [videoLoading, setVideoLoading] = React.useState(true);
 	const [buttonDisabled, setButtonDisabled] = React.useState(true);
-	const [error, setError] = React.useState(null);
 
 	const dispatch = useDispatch();
 
 	const currentStory = useSelector(getCurrentStory);
 
-	/** API Calls */
-	const getStoryDetailApi = useApi(contentApi.getStoryDetails);
-
 	const getStoryDetails = React.useCallback(async (contentStoryId) => {
-		const result = await getStoryDetailApi.request(contentStoryId);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-
-		const { chapters, story } = result.data;
-
-		const sortedChapters = chapters.sort((a, b) =>
-			a.chapterOrder < b.chapterOrder
-				? -1
-				: Number(a.chapterOrder > b.chapterOrder)
-		);
-
-		// console.log(
-		// 	"Chapters",
-		// 	sortedChapters.map((chapter) => ({
-		// 		actualTargetBodyMoves: chapter.actualTargetBodyMoves,
-		// 		bodyMoves: chapter.bodyMoves,
-		// 		completed: chapter.completed,
-		// 		started: chapter.started,
-		// 		targetTimeInMillis: chapter.targetTimeInMillis,
-		// 		timeSpentInMillis: chapter.timeSpentInMillis,
-		// 	}))
-		// );
-
-		// console.log("Story", story);
-
-		dispatch(setCurrentChapters(sortedChapters));
-		return dispatch(setCurrentStory(story));
+		dispatch(storyDetailsFetch(contentStoryId));
 	});
 
-	/** Set up VideoRef */
 	const videoRef = React.useRef(null);
 	const { handleUnloadVideo } = useVideo(videoRef, videoStatus);
 
-	/** Disable Back Button  */
 	const { backDisabled } = useDisableHardwareBack();
 	useFocusEffect(backDisabled());
 
-	/**Effects */
+	/** Effects */
 
 	React.useEffect(() => {
 		getStoryDetails(contentStoryId);
+		dispatch(setVideoLoading(true));
 	}, []);
 
 	React.useEffect(() => {
 		if (videoStatus) {
-			if (videoStatus.positionMillis >= 2000) {
+			if (
+				videoStatus.positionMillis >= 2000 ||
+				(currentStory.started && !currentStory.completed) ||
+				currentStory.completed
+			) {
 				setButtonDisabled(false);
 			}
 		}
 	}, [videoStatus]);
 
-	/**Video monitoring functions */
+	/** Video monitoring functions */
 
 	const _onPlaybackStatusUpdate = async (status) => {
 		if (status.didJustFinish) {
@@ -158,8 +131,12 @@ const StoryIntroScreen = ({ navigation, route }) => {
 	};
 
 	const handleStartStory = async () => {
+		if (currentStory.completed) {
+			// Trigger story restart
+			dispatch(resetStoryContentActivityData(contentStoryId));
+		}
 		await handleUnloadVideo();
-		navigation.navigate(routes.home.STORY);
+		navigation.navigate(routes.home.STORY, { contentStoryId });
 	};
 
 	const handleGoBack = async () => {
@@ -173,14 +150,11 @@ const StoryIntroScreen = ({ navigation, route }) => {
 		if (currentStory.started && !currentStory.completed)
 			return "Continue Story";
 		else if (!currentStory.started) return "Start Story";
+		else return "Restart Story";
 	};
 
 	return (
 		<>
-			<Loader
-				visible={getStoryDetailApi.loading || videoLoading}
-				message="Loading your content"
-			/>
 			<ScreenContainer backgroundColor={COLORS.dark}>
 				{currentStory && (
 					<Container>
@@ -190,7 +164,9 @@ const StoryIntroScreen = ({ navigation, route }) => {
 							<ThreeStarsElement />
 							<Spacer />
 							<InstructionTextWhite>
-								{currentStory.instruction}
+								{!currentStory.completed
+									? currentStory.instruction
+									: "You've already completed this story!"}
 							</InstructionTextWhite>
 							<Spacer />
 							<ThreeStarsElement />
@@ -215,7 +191,8 @@ const StoryIntroScreen = ({ navigation, route }) => {
 								shouldPlay={true}
 								isLooping={false}
 								rate={1}
-								onLoadStart={() => setVideoLoading(false)}
+								onLoadStart={() => dispatch(setVideoLoading(true))}
+								onLoad={() => dispatch(setVideoLoading(false))}
 							/>
 						</VideoContainer>
 					</Container>

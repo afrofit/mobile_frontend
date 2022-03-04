@@ -2,6 +2,7 @@ import * as React from "react";
 import styled from "styled-components/native";
 import { useFocusEffect } from "@react-navigation/native";
 
+import authFuncs from "../../store/thunks/auth_functions";
 import Button from "../../components/buttons/Button";
 import PageHeaderSmall from "../../components/headers/PageHeaderSmall";
 import ScreenContainer from "../../utilities/ScreenContainer";
@@ -9,10 +10,8 @@ import useDisableHardwareBack from "../../hooks/useDisableHardwareBack";
 
 import { COLORS } from "../../theme/colors";
 import { DecorativeElement } from "../../components/DecorativeElement";
-import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUserToken } from "../../store/reducers/userReducer";
-import useAuth from "../../hooks/useAuth";
-import authFuncs from "../../store/thunks/auth_functions";
+import { useDispatch, useSelector } from "react-redux";
 
 const NotifierContainer = styled.View`
 	height: 100%;

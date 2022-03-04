@@ -5,6 +5,7 @@ import {
 	resendResetPasswordVerifyCode,
 	sendPasswordResetCode,
 	setNewPassword,
+	usernameChange,
 	verifyPasswordResetCode,
 	verifySignupCode,
 } from "../../api/auth/auth_thunks";
@@ -16,6 +17,7 @@ import {
 } from "../reducers/uiReducer";
 import {
 	setChangePasswordSuccess,
+	setChangeUsernameSuccess,
 	setConfirmPasswordResetCodeSuccess,
 	setCurrentUserResetToken,
 	setCurrentUserToken,
@@ -256,6 +258,40 @@ export function resendUserVerificationCode() {
 	};
 }
 
+/** Change Username Thunk */
+export function changeUsername(username) {
+	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
+		dispatch(setChangeUsernameSuccess(false));
+
+		usernameChange(username)
+			.then((response) => {
+				dispatch(finishedRequest());
+				return response;
+			})
+			.then((response) => {
+				console.log("Change Username Response", response);
+				const { data, ok } = response;
+				if (data && ok) {
+					dispatch(setChangeUsernameSuccess(true));
+					return dispatch(setCurrentUserToken(data));
+				} else if (!ok && data) {
+					throw new Error(data);
+				} else {
+					dispatch(
+						showGenericErrorDialog("There is a problem with you code. Retry?")
+					);
+					throw new Error("Cannot create account");
+				}
+			})
+			.catch((error) => {
+				dispatch(showGenericErrorDialog("Sorry. An unexpected error occured."));
+				console.error(error);
+			});
+	};
+}
+
 /** Change Password Thunks */
 export function verifyUserPasswordResetCode(payload) {
 	return (dispatch) => {
@@ -268,11 +304,17 @@ export function verifyUserPasswordResetCode(payload) {
 				if (data && ok) {
 					return dispatch(setCurrentUserToken(data));
 				} else if (!ok && data) {
-					dispatch(showGenericErrorDialog(data));
+					throw new Error(data);
 				} else {
-					dispatch(showGenericErrorDialog("An unexpected error occured."));
+					dispatch(
+						showGenericErrorDialog("There is a problem with you code. Retry?")
+					);
+					throw new Error("Cannot verify supplied code");
 				}
 			})
-			.catch((error) => console.error(error));
+			.catch((error) => {
+				dispatch(showGenericErrorDialog("Sorry. An unexpected error occured."));
+				console.error(error);
+			});
 	};
 }

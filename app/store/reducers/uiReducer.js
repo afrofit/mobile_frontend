@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
 	requestsLoading: 0,
 	showGenericErrorDialog: undefined,
+	videoLoading: false,
 };
 
 const uiSlice = createSlice({
@@ -21,17 +22,22 @@ const uiSlice = createSlice({
 		hideGenericErrorDialog(state, { payload }) {
 			state.showGenericErrorDialog = undefined;
 		},
+		setVideoLoading(state, { payload }) {
+			state.videoLoading = payload;
+		},
 	},
 });
 
 export const {
 	newRequest,
+	setVideoLoading,
 	finishedRequest,
 	showGenericErrorDialog,
 	hideGenericErrorDialog,
 } = uiSlice.actions;
 
 export const selectUiIsLoading = (state) => state.ui.requestsLoading > 0;
+export const selectVideoLoading = (state) => state.ui.videoLoading;
 
 export const selectShowGenericErrorDialog = (state) =>
 	state.ui.showGenericErrorDialog;

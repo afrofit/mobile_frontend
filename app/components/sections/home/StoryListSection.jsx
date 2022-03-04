@@ -12,7 +12,6 @@ const Scroller = styled.ScrollView`
 `;
 
 const Container = styled.View`
-	/* background-color: red; */
 	width: 95%;
 	flex: 1;
 `;
@@ -20,27 +19,24 @@ const Container = styled.View`
 const StoryListSection = ({ triggerNavigate, stories }) => {
 	const renderStories = () => {
 		if (stories && stories.length) {
-			return (
-				stories.length &&
-				stories.map((story) => {
-					return (
-						<StoryCard
-							key={story.contentStoryId}
-							source={story.thumb}
-							storyTitle={story.title}
-							onPress={() => triggerNavigate(story.contentStoryId)}
-							completed={story.completed}
-							started={story.started}
-							totalTargetBodyMoves={story.totalTargetBodyMoves}
-							totalBodyMoves={story.totalBodyMoves}
-						/>
-					);
-				})
-			);
+			return stories.map((story) => {
+				return (
+					<StoryCard
+						key={story.contentStoryId}
+						source={story.thumb}
+						storyTitle={story.title}
+						onPress={() => triggerNavigate(story.contentStoryId)}
+						completed={story.completed}
+						started={story.started}
+						totalTargetBodyMoves={story.totalTargetBodyMoves}
+						totalBodyMoves={story.totalBodyMoves}
+					/>
+				);
+			});
 		} else {
 			return (
 				<Font variant="paragraph" color={COLORS.grayDark}>
-					There are no stories available to play.
+					There are currently no stories available to play.
 				</Font>
 			);
 		}

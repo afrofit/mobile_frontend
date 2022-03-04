@@ -1,23 +1,23 @@
 import * as React from "react";
-import styled from "styled-components/native";
-import { StyleSheet } from "react-native";
-import { Keyboard } from "react-native";
 import * as Yup from "yup";
+import styled from "styled-components/native";
+
+import { Keyboard } from "react-native";
+
+import authFuncs from "../../store/thunks/auth_functions";
+import Button from "../buttons/Button";
+import ClearButton from "../buttons/ClearButton";
+import Form from "../form/Form";
+import PageHeaderSmall from "../headers/PageHeaderSmall";
+import Spacer from "../../utilities/Spacer";
+import TextInputField from "../form/fields/TextInputField";
 
 import { BackgroundOverlay } from "../BackgroundOverlay";
 import { BORDER_RADIUS_MID } from "../../theme/globals";
 import { COLORS } from "../../theme/colors";
-import PageHeaderSmall from "../headers/PageHeaderSmall";
-import FormErrorMessage from "../form/fields/FormErrorMessage";
-import Form from "../form/Form";
-import Spacer from "../../utilities/Spacer";
-import TextInputField from "../form/fields/TextInputField";
-import Button from "../buttons/Button";
-import ClearButton from "../buttons/ClearButton";
-import authApi from "../../api/auth/authApi";
-import useApi from "../../hooks/useApi";
-import Loader from "../Loader";
-import useAuth from "../../hooks/useAuth";
+import { getCurrentUserToken } from "../../store/reducers/userReducer";
+import { hideGenericErrorDialog } from "../../store/reducers/uiReducer";
+import { useDispatch, useSelector } from "react-redux";
 
 const initialValues = {
 	username: "paddy_manchy",
@@ -42,42 +42,35 @@ const ModalBG = styled.ImageBackground`
 	background-color: ${COLORS.black};
 `;
 
-const SingleInputModal = ({ message = "Success!", onCancelChange }) => {
-	const [error, setError] = React.useState();
+const SingleInputModal = ({ onCancelChange }) => {
+	const dispatch = useDispatch();
 
-	// Create Account API flow here
-	const { saveNewUsername } = useAuth();
-	const changeUsernameApi = useApi(authApi.changeUsername);
+	const currentUserToken = useSelector(getCurrentUserToken);
+
+	React.useEffect(() => {
+		if (currentUserToken) {
+			triggerSuccess();
+			dismissModal();
+		}
+	}, [currentUserToken]);
 
 	const handleChangeUsername = async (userData, { resetForm }) => {
 		Keyboard.dismiss();
 		const { username } = userData;
-		const result = await changeUsernameApi.request(username);
-
-		if (!result.ok) {
-			if (result.data) {
-				setError(result.data);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-			return;
-		}
-		console.log("Change Password result", result.data);
+		dispatch(changeUsername(username));
 		resetForm();
-		saveNewUsername(result.data);
-		return dismissModal();
 	};
+
+	const triggerSuccess = () => {
+		authFuncs.updateUserInStore(dispatch, currentUserToken);
+	};
+
 	const dismissModal = () => {
 		onCancelChange();
 	};
 
 	return (
 		<BackgroundOverlay>
-			<Loader
-				visible={changeUsernameApi.loading}
-				message="Changing your username"
-			/>
-			<FormErrorMessage error={error} />
 			<ModalBG>
 				<PageHeaderSmall title={message} />
 
@@ -99,7 +92,7 @@ const SingleInputModal = ({ message = "Success!", onCancelChange }) => {
 								autoCapitalize="none"
 								label="Enter new username"
 								name="username"
-								onDismissError={() => setError(null)}
+								onDismissError={() => dispatch(hideGenericErrorDialog())}
 							/>
 							<Spacer />
 

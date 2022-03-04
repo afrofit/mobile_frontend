@@ -48,7 +48,7 @@ export const resendApiSignupVerificationCode = async () => {
 
 /** Change Username */
 
-export const changeUsername = async (username) => {
+export const usernameChange = async (username) => {
 	const result = await apiClient.post("/users/change-username", { username });
 	return checkAPIErrors(result);
 };

@@ -1,26 +1,30 @@
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
+
+import { useDispatch, useSelector } from "react-redux";
+import { useFocusEffect } from "@react-navigation/native";
+
 import BackButton from "../../../components/buttons/BackButton";
-import Button from "../../../components/buttons/Button";
-import CancelButton from "../../../components/buttons/CancelButton";
 import ChapterCard from "../../../components/cards/ChapterCard";
+import routes from "../../../theme/routes";
+import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryScreenHeader from "../../../components/headers/StoryScreenHeader";
-import { ImageBackground } from "../../../components/ImageBackground";
-import Font from "../../../elements/Font";
+
+import { COLORS } from "../../../theme/colors";
+import { DEVICE_WIDTH } from "../../../theme/globals";
 import {
 	getCurrentStory,
 	getCurrentStoryChapters,
 	setCurrentChapter,
 } from "../../../store/reducers/contentReducer";
-
-import { COLORS } from "../../../theme/colors";
-import { DEVICE_WIDTH } from "../../../theme/globals";
-import routes from "../../../theme/routes";
-import ScreenContainer from "../../../utilities/ScreenContainer";
+import { storyChaptersFetch } from "../../../store/thunks/contentThunks";
+import LoaderInView from "../../../components/LoaderInView";
+import {
+	getContentUpdated,
+	setContentUpdated,
+} from "../../../store/reducers/activityReducer";
 
 const Container = styled.View`
-	/* height: 100%; */
 	padding: 20px;
 	padding-top: 0;
 	width: ${DEVICE_WIDTH};
@@ -32,24 +36,62 @@ const Scroller = styled.ScrollView`
 	width: 100%;
 `;
 
-const StoryScreen = ({ navigation }) => {
+const StoryScreen = ({ navigation, route }) => {
+	const { contentStoryId } = route.params;
+
 	const dispatch = useDispatch();
 
 	const currentStory = useSelector(getCurrentStory);
 	const currentChapters = useSelector(getCurrentStoryChapters);
+	const contentUpdated = useSelector(getContentUpdated);
+
+	const getStoryChapters = React.useCallback(
+		async (contentStoryId) => {
+			dispatch(storyChaptersFetch(contentStoryId));
+		},
+		[contentStoryId]
+	);
+
+	/** Effects */
+
+	useFocusEffect(
+		React.useCallback(() => {
+			getStoryChapters(contentStoryId);
+
+			return () => {
+				dispatch(setContentUpdated(false));
+			};
+		}, [])
+	);
+
+	React.useEffect(() => {
+		console.log("-------x------$-----x-------");
+		console.log(
+			"Current Chapters",
+			currentChapters
+				? currentChapters.map((chapter) => {
+						return {
+							bodyMoves: chapter.bodyMoves,
+							chapterOrderNumber: chapter.chapterOrder,
+							completed: chapter.completed,
+							started: chapter.started,
+						};
+				  })
+				: "Nothing here"
+		);
+	}, [dispatch]);
 
 	const handleGoToRoot = () => {
 		navigation.navigate(routes.ROOT);
 	};
 
-	const handleGoToChapter = (chapterId) => {
+	const handleGoToChapter = async (chapterId) => {
 		dispatch(setCurrentChapter(chapterId));
-		navigation.navigate(routes.home.CHAPTER);
+		navigation.push(routes.home.CHAPTER, { contentStoryId, chapterId });
 	};
 
 	return (
 		<ScreenContainer backgroundColor={COLORS.dark}>
-			{/* <CancelButton onPress={() => console.log("Cancel Pressed!")} /> */}
 			{currentStory && (
 				<Container>
 					<StoryScreenHeader
@@ -60,7 +102,7 @@ const StoryScreen = ({ navigation }) => {
 						<BackButton left={20} top={20} onPress={handleGoToRoot} />
 					</StoryScreenHeader>
 					<Scroller showsVerticalScrollIndicator={false}>
-						{currentChapters &&
+						{currentChapters ? (
 							currentChapters.map((chapter) => {
 								return (
 									<ChapterCard
@@ -69,9 +111,15 @@ const StoryScreen = ({ navigation }) => {
 										onPress={() => handleGoToChapter(chapter.contentChapterId)}
 										bodyMoves={chapter.bodyMoves}
 										targetBodyMoves={chapter.targetBodyMoves}
+										started={chapter.started}
+										completed={chapter.completed}
+										disabled={chapter.completed}
 									/>
 								);
-							})}
+							})
+						) : (
+							<LoaderInView messsage="Fetching story chapters." />
+						)}
 					</Scroller>
 				</Container>
 			)}
