@@ -36,7 +36,7 @@ const StoryListSection = ({ triggerNavigate, stories }) => {
 		} else {
 			return (
 				<Font variant="paragraph" color={COLORS.grayDark}>
-					There are no stories available to play.
+					There are currently no stories available to play.
 				</Font>
 			);
 		}
