@@ -36,7 +36,7 @@ const getUserPerformanceData = () =>
 const getCurrentMarathonData = () =>
 	apiClient.get("/marathon/get-current-marathon-data");
 
-const saveMarathonMarathonData = (data) =>
+const saveMarathonData = (data) =>
 	apiClient.save("/marathon/save-user-marathon-activity", { data });
 
 export default {
@@ -49,4 +49,5 @@ export default {
 	getUserPerformanceData,
 	resetStoryContentActivity,
 	getCurrentMarathonData,
+	saveMarathonData,
 };

@@ -28,11 +28,11 @@ const MarathonScreen = ({}) => {
 					contentContainerStyle={styles.contentContainer}
 				>
 					<RankingCard rankPosition={1} />
-					<RankingCard currentUser={true} rankPosition={2} />
+					<RankingCard rankPosition={2} />
 					<RankingCard rankPosition={3} />
 					<RankingCard rankPosition={4} />
-					<RankingCard rankPosition={5} />
-					<PromotionNotifyCard />
+					<RankingCard currentUser={true} rankPosition={5} />
+					<PromotionNotifyCard league={1} />
 					<RankingCard rankPosition={6} />
 				</Scroller>
 			</ContentContainer>

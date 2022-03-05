@@ -182,7 +182,7 @@ export function storeUserContentActivityData(payload) {
 
 export function resetStoryContentActivityData(payload) {
 	return (dispatch) => {
-		console.log("Chapter Order Number", payload.chapterOrderNumber);
+		console.log("Reset Story ContentID", payload);
 		activityApi
 			.resetStoryContentActivity(payload)
 			.then((response) => {

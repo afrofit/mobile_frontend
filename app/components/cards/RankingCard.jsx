@@ -53,7 +53,7 @@ const RankingCard = ({
 	username = "Lee Rayner Mitch",
 	currentUser = false,
 	rankPosition = 4,
-	userXP = 567,
+	bodyMoves = 567,
 }) => {
 	const rankingNumberColor = () => {
 		return rankPosition == 1
@@ -75,7 +75,7 @@ const RankingCard = ({
 				</RankNumberBackground>
 				<NameFont currentUser={currentUser}>{username}</NameFont>
 			</IdentifierGrouping>
-			<NumberFont currentUser={currentUser}>{userXP} XP</NumberFont>
+			<NumberFont currentUser={currentUser}>{bodyMoves} XP</NumberFont>
 		</CardContainer>
 	);
 };
