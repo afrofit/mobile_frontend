@@ -132,8 +132,8 @@ const StoryIntroScreen = ({ navigation, route }) => {
 
 	const handleStartStory = async () => {
 		if (currentStory.completed) {
-			// Trigger story restart
-			dispatch(resetStoryContentActivityData(contentStoryId));
+			// Trigger story reset
+			dispatch(resetStoryContentActivityData({ contentStoryId }));
 		}
 		await handleUnloadVideo();
 		navigation.navigate(routes.home.STORY, { contentStoryId });

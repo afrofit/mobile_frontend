@@ -5,6 +5,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { COLORS } from "../../theme/colors";
 import { MARGIN_VERTICAL, MARGIN_VERTICAL_SMALL } from "../../theme/globals";
 import Spacer from "../../utilities/Spacer";
+import { ranks } from "../../data/rank-data";
 
 const ICON_SIZE = 15;
 
@@ -32,7 +33,7 @@ const IconContainer = styled.View`
 	margin-left: ${MARGIN_VERTICAL};
 `;
 
-const PromotionNotifyCard = () => {
+const PromotionNotifyCard = ({ league = 1 }) => {
 	return (
 		<CardContainer>
 			<IconContainer>
@@ -42,7 +43,7 @@ const PromotionNotifyCard = () => {
 					size={ICON_SIZE}
 				/>
 			</IconContainer>
-			<TextFont>Core Trainer League</TextFont>
+			<TextFont>{ranks[league].name} Trainer League</TextFont>
 			<IconContainer>
 				<FontAwesome5
 					name="arrow-circle-up"
