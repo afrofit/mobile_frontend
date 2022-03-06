@@ -36,7 +36,7 @@ const RankNumberFont = styled(NameFont)`
 `;
 
 const RankNumberBackground = styled.View`
-	width: 20px;
+	width: 35px;
 	height: 20px;
 	justify-content: center;
 	align-items: center;

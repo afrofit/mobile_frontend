@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useDispatch } from "react-redux";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
@@ -10,7 +11,6 @@ import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { ContentContainer } from "../../../components/ContentContainer";
 import { COLORS } from "../../../theme/colors";

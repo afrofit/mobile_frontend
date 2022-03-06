@@ -11,7 +11,7 @@ import {
 	showGenericErrorDialog,
 } from "../reducers/uiReducer";
 
-export function fetchTopPerformers() {
+export function fetchMarathonData() {
 	return (dispatch) => {
 		dispatch(newRequest());
 		dispatch(hideGenericErrorDialog());
@@ -25,7 +25,8 @@ export function fetchTopPerformers() {
 				const { data, ok } = response;
 
 				if (data && ok) {
-					return dispatch(setTopPerformers(data));
+					dispatch(setUserMarathonScore(data.score));
+					return dispatch(setTopPerformers(data.listings));
 				} else if (!ok && data) {
 					throw new Error(data);
 				} else {

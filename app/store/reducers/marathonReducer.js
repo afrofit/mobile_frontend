@@ -15,6 +15,9 @@ const marathonSlice = createSlice({
 		setUserMarathonScore(state, { payload }) {
 			state.userMarathonScore = payload;
 		},
+		unsetUserMarathonScore(state, { payload }) {
+			state.userMarathonScore = null;
+		},
 		unsetTopPerformeers(state, { payload }) {
 			state.topPerformers = null;
 		},
@@ -22,8 +25,12 @@ const marathonSlice = createSlice({
 });
 
 /** Actions */
-export const { setTopPerformers, unsetTopPerformeers, setUserMarathonScore } =
-	marathonSlice.actions;
+export const {
+	setTopPerformers,
+	unsetTopPerformeers,
+	unsetUserMarathonScore,
+	setUserMarathonScore,
+} = marathonSlice.actions;
 
 /** Selectors */
 export const getTopPerformers = (state) => state.marathon.topPerformers;

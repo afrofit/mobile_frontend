@@ -266,22 +266,42 @@ const DanceScreen = ({ navigation, route }) => {
 	const handleSaveActivity = async (
 		chapterCompleted = false,
 		storyCompleted = false,
-		chapterOrderNumber = chapterOrder
+		chapterOrderNumber = chapterOrder,
+		premature = false
 	) => {
 		const CALORIES_BURNED = calculateCaloriesBurned(sessionCount);
-		console.log(
-			"Figures from Save:",
-			REAL_STEP_COUNT,
-			existingCount,
-			sessionCount,
-			currentChapter.bodyMoves,
-			CALORIES_BURNED,
-			existingTimeDanced,
-			sessionTimeDanced,
-			REAL_TIME_DANCED
-		);
+
+		let ADJUSTED_SESSION_COUNT = sessionCount;
+
+		if (premature) {
+			const totalCount = sessionCount + existingCount;
+			if (
+				totalCount >= targetBodyMoves * 0.5 &&
+				totalCount < targetBodyMoves * 0.75
+			) {
+				if (existingCount < targetBodyMoves * 0.5) {
+					ADJUSTED_SESSION_COUNT = targetBodyMoves * 0.5 - existingCount;
+				}
+				if (existingCount >= targetBodyMoves * 0.5) {
+					ADJUSTED_SESSION_COUNT = existingCount - targetBodyMoves * 0.5;
+				}
+			} else if (
+				totalCount >= targetBodyMoves * 0.75 &&
+				totalCount < targetBodyMoves
+			) {
+				if (existingCount < targetBodyMoves * 0.75) {
+					ADJUSTED_SESSION_COUNT = targetBodyMoves * 0.75 - existingCount;
+				}
+				if (existingCount >= targetBodyMoves * 0.75) {
+					ADJUSTED_SESSION_COUNT = existingCount - targetBodyMoves * 0.75;
+				}
+			} else if (totalCount >= 0 && totalCount < targetBodyMoves * 0.5) {
+				ADJUSTED_SESSION_COUNT = sessionCount;
+			}
+		}
+
 		const payload = {
-			bodyMoves: sessionCount,
+			bodyMoves: premature ? ADJUSTED_SESSION_COUNT : sessionCount,
 			totalTimeDancedInMilliseconds: sessionTimeDanced,
 			caloriesBurned: CALORIES_BURNED,
 			contentStoryId: currentChapter.contentStoryId,
@@ -360,15 +380,15 @@ const DanceScreen = ({ navigation, route }) => {
 	const handleQuitDance = async () => {
 		await handleUnloadVideo();
 		setShowConfirmModal(false);
-		await handleSaveActivity();
+		await handleSaveActivity(false, false, chapterOrder, true);
 		return navigation.navigate(routes.home.STORY, { contentStoryId });
 	};
 
 	const handleUserResults = async (status) => {
+		await handleUnloadVideo();
+		setDelay(null);
 		switch (status) {
 			case "success":
-				await handleUnloadVideo();
-				setDelay(null);
 				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 					data: {
 						success: true,
@@ -380,8 +400,6 @@ const DanceScreen = ({ navigation, route }) => {
 				});
 				break;
 			case "failed":
-				await handleUnloadVideo();
-				setDelay(null);
 				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 					data: {
 						success: false,
@@ -392,8 +410,6 @@ const DanceScreen = ({ navigation, route }) => {
 				});
 				break;
 			case "story_complete":
-				await handleUnloadVideo();
-				setDelay(null);
 				navigation.navigate(routes.home.STORY_FINISHED_SCREEN, {
 					data: {
 						message: currentStory.storySuccessText,
