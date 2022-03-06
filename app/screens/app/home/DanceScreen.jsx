@@ -41,6 +41,8 @@ import {
 	storeUserDailyActivityData,
 	storeUserPerformanceData,
 } from "../../../store/thunks/activityThunks";
+import { saveUserMarathonData } from "../../../store/thunks/marathonThunks";
+import { getUserMarathonScore } from "../../../store/reducers/marathonReducer";
 
 const Container = styled.View`
 	height: 100%;
@@ -110,6 +112,7 @@ const DanceScreen = ({ navigation, route }) => {
 	const currentChapter = useSelector(getCurrentStoryChapter);
 	const currentChapters = useSelector(getCurrentStoryChapters);
 	const currentStory = useSelector(getCurrentStory);
+	const userMarathonScore = useSelector(getUserMarathonScore);
 
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 	const [videoStatus, setVideoStatus] = React.useState();
@@ -181,6 +184,7 @@ const DanceScreen = ({ navigation, route }) => {
 		setExistentTimeDanced(timeSpentInMillis);
 		console.log("Body Moves Count Existing", currentChapter.bodyMoves);
 		console.log("Current Chapter", currentChapter && currentChapter.bodyMoves);
+		console.log("User Marathon Score Object", userMarathonScore.id);
 	}, [dispatch]);
 
 	React.useEffect(() => {
@@ -314,6 +318,12 @@ const DanceScreen = ({ navigation, route }) => {
 				contentChapterId: payload.contentChapterId,
 				contentStoryId: payload.contentStoryId,
 				chapterOrderNumber: payload.chapterOrderNumber,
+			})
+		);
+		dispatch(
+			saveUserMarathonData({
+				userMarathonScoreId: userMarathonScore.id,
+				bodyMoves: payload.bodyMoves,
 			})
 		);
 

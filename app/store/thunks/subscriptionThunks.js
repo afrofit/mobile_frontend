@@ -1,7 +1,9 @@
 import {
 	subscriptionCancel,
 	subscriptionCreate,
+	getCurrentUserSubscription,
 } from "../../api/subscription/subscriptionApi";
+import { fetchCurrentUserSubscription } from "../../api/subscription/subscriptionThunkControllers";
 import {
 	resetSubscription,
 	setSubscription,
@@ -37,6 +39,34 @@ export function cancelSubscription(subscriptionId) {
 			.catch((error) => {
 				dispatch(showGenericErrorDialog(error.message));
 				console.error(error);
+			});
+	};
+}
+/* *Thunks */
+export function requestCurrentUserSubscription() {
+	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
+		getCurrentUserSubscription()
+			.then((response) => {
+				dispatch(finishedRequest());
+				return response;
+			})
+			.then((response) => {
+				// console.log("Subscription Response", response);
+				const { data, ok } = response;
+				if (data && ok) {
+					dispatch(setSubscription(data));
+				} else if (!ok && data) {
+					dispatch(resetSubscription(data));
+
+					throw new Error(data);
+				} else {
+					dispatch(
+						showGenericErrorDialog("Can't fetch your subscription. Retry?")
+					);
+					throw new Error("Error. Cannot fetch your subscription.");
+				}
 			});
 	};
 }

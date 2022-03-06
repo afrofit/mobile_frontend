@@ -1,16 +1,20 @@
 import activityApi from "../../api/activity/activityApi";
 import { setContentUpdated } from "../reducers/activityReducer";
 import {
-	setCorePerformers,
-	setPeakPerformers,
-	setRookiePerformers,
-	setSuperPerformers,
-	setSuperstartPerformers,
 	setTopPerformers,
+	setUserMarathonScore,
 } from "../reducers/marathonReducer";
+import {
+	finishedRequest,
+	hideGenericErrorDialog,
+	newRequest,
+	showGenericErrorDialog,
+} from "../reducers/uiReducer";
 
 export function fetchTopPerformers() {
 	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.getCurrentMarathonData()
 			.then((response) => {
@@ -21,12 +25,6 @@ export function fetchTopPerformers() {
 				const { data, ok } = response;
 
 				if (data && ok) {
-					//separate the data and put in the right buckets
-					dispatch(setRookiePerformers(data));
-					dispatch(setCorePerformers(data));
-					dispatch(setSuperPerformers(data));
-					dispatch(setPeakPerformers(data));
-					dispatch(setSuperstartPerformers(data));
 					return dispatch(setTopPerformers(data));
 				} else if (!ok && data) {
 					throw new Error(data);
@@ -42,10 +40,12 @@ export function fetchTopPerformers() {
 	};
 }
 
-export function updateTopPerformers() {
+export function saveUserMarathonData(data) {
 	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
-			.saveMarathonData()
+			.saveMarathonData(data)
 			.then((response) => {
 				dispatch(finishedRequest());
 				return response;
@@ -60,6 +60,36 @@ export function updateTopPerformers() {
 				} else {
 					dispatch(showGenericErrorDialog("Can't update marathon scores."));
 					throw new Error("Cannot update marathon scoress.");
+				}
+			})
+			.catch((error) => {
+				dispatch(showGenericErrorDialog(error.message));
+				console.error(error);
+			});
+	};
+}
+
+export function initializeUserMarathonScore() {
+	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
+		activityApi
+			.initializeCurrentUserMarathonData()
+			.then((response) => {
+				dispatch(finishedRequest());
+				return response;
+			})
+			.then((response) => {
+				const { data, ok } = response;
+
+				if (data && ok) {
+					// console.log("Marathon Initialized?", data);
+					return dispatch(setUserMarathonScore(data));
+				} else if (!ok && data) {
+					throw new Error(data);
+				} else {
+					dispatch(showGenericErrorDialog("Can't fetch marathon data."));
+					throw new Error("Cannot fetch marathon data.");
 				}
 			})
 			.catch((error) => {
