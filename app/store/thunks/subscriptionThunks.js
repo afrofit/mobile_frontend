@@ -28,7 +28,7 @@ export function cancelSubscription(subscriptionId) {
 			.then((response) => {
 				const { data, ok } = response;
 				if (data && ok) {
-					dispatch(resetSubscription());
+					return dispatch(resetSubscription());
 				} else if (!ok && data) {
 					throw new Error(data);
 				} else {
@@ -53,20 +53,24 @@ export function requestCurrentUserSubscription() {
 				return response;
 			})
 			.then((response) => {
-				// console.log("Subscription Response", response);
 				const { data, ok } = response;
+				console.log("Subscription Response", data);
 				if (data && ok) {
-					dispatch(setSubscription(data));
+					return dispatch(setSubscription(data));
 				} else if (!ok && data) {
 					dispatch(resetSubscription(data));
 
 					throw new Error(data);
-				} else {
+				} else if (!ok && !data) {
 					dispatch(
 						showGenericErrorDialog("Can't fetch your subscription. Retry?")
 					);
 					throw new Error("Error. Cannot fetch your subscription.");
 				}
+			})
+			.catch((error) => {
+				dispatch(showGenericErrorDialog(error.message));
+				console.error(error);
 			});
 	};
 }
