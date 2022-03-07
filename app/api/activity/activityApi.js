@@ -36,8 +36,11 @@ const getUserPerformanceData = () =>
 const getCurrentMarathonData = () =>
 	apiClient.get("/marathon/get-current-marathon-data");
 
-const saveMarathonData = (data) =>
-	apiClient.save("/marathon/save-user-marathon-activity", { data });
+const initializeCurrentUserMarathonData = () =>
+	apiClient.get("/marathon/initialize-user-marathon-activity");
+
+const saveMarathonData = (marathonData) =>
+	apiClient.post("/marathon/save-user-marathon-activity", { marathonData });
 
 export default {
 	saveUserDailyActivity,
@@ -49,5 +52,6 @@ export default {
 	getUserPerformanceData,
 	resetStoryContentActivity,
 	getCurrentMarathonData,
+	initializeCurrentUserMarathonData,
 	saveMarathonData,
 };

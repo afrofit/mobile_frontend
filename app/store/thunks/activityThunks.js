@@ -13,14 +13,25 @@ import {
 	updateCurrentChapters,
 	updateCurrentStory,
 } from "../reducers/contentReducer";
-import { finishedRequest, showGenericErrorDialog } from "../reducers/uiReducer";
+import {
+	finishedRequest,
+	hideGenericErrorDialog,
+	newRequest,
+	showGenericErrorDialog,
+} from "../reducers/uiReducer";
 
 /**Thunks */
 
 export function fetchUserDailyActivity() {
 	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.getUserdailyActivity()
+			.then((response) => {
+				dispatch(finishedRequest());
+				return response;
+			})
 			.then((response) => {
 				// console.log("Save Daily Data", response.data);
 				const { data, ok } = response;
@@ -53,6 +64,8 @@ export function fetchUserDailyActivity() {
 
 export function storeUserDailyActivityData(payload) {
 	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.saveUserDailyActivity(payload)
 			.then((response) => {
@@ -82,6 +95,8 @@ export function storeUserDailyActivityData(payload) {
 
 export function fetchUserPerformanceData() {
 	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.getUserPerformanceData()
 			.then((response) => {
@@ -112,6 +127,8 @@ export function fetchUserPerformanceData() {
 
 export function storeUserPerformanceData(payload) {
 	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.saveUserPerformanceActivity(payload)
 			.then((response) => {
@@ -153,6 +170,8 @@ export function storeUserPerformanceData(payload) {
 export function storeUserContentActivityData(payload) {
 	return (dispatch) => {
 		console.log("Chapter Order Number", payload.chapterOrderNumber);
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.saveUserContentPlayedActivity(payload)
 			.then((response) => {
@@ -182,7 +201,8 @@ export function storeUserContentActivityData(payload) {
 
 export function resetStoryContentActivityData(payload) {
 	return (dispatch) => {
-		console.log("Reset Story ContentID", payload);
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
 		activityApi
 			.resetStoryContentActivity(payload)
 			.then((response) => {

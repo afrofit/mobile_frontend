@@ -8,11 +8,11 @@ export const subscriptionCancel = (subscriptionId) =>
 		subscriptionId,
 	});
 
-export const getCurrentSubscription = () =>
+export const getCurrentUserSubscription = () =>
 	apiClient.get("/subscription/get-subscription");
 
 export default {
 	subscriptionCreate,
 	subscriptionCancel,
-	getCurrentSubscription,
+	getCurrentUserSubscription,
 };

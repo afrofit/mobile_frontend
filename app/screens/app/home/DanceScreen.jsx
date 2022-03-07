@@ -41,6 +41,8 @@ import {
 	storeUserDailyActivityData,
 	storeUserPerformanceData,
 } from "../../../store/thunks/activityThunks";
+import { saveUserMarathonData } from "../../../store/thunks/marathonThunks";
+import { getUserMarathonScore } from "../../../store/reducers/marathonReducer";
 
 const Container = styled.View`
 	height: 100%;
@@ -110,6 +112,7 @@ const DanceScreen = ({ navigation, route }) => {
 	const currentChapter = useSelector(getCurrentStoryChapter);
 	const currentChapters = useSelector(getCurrentStoryChapters);
 	const currentStory = useSelector(getCurrentStory);
+	const userMarathonScore = useSelector(getUserMarathonScore);
 
 	const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 	const [videoStatus, setVideoStatus] = React.useState();
@@ -178,15 +181,21 @@ const DanceScreen = ({ navigation, route }) => {
 
 	React.useEffect(() => {
 		setExistentCount(currentChapter.bodyMoves);
-		setExistentTimeDanced(timeSpentInMillis);
-		console.log("Body Moves Count Existing", currentChapter.bodyMoves);
-		console.log("Current Chapter", currentChapter && currentChapter.bodyMoves);
+		// setExistentTimeDanced(timeSpentInMillis);
+		if (currentChapter.bodyMoves === targetBodyMoves * 0.75) {
+			setExistentTimeDanced(targetTimeInMillis * 0.75);
+		}
+		if (currentChapter.bodyMoves === targetBodyMoves * 0.5) {
+			setExistentTimeDanced(targetTimeInMillis * 0.5);
+		}
 	}, [dispatch]);
 
 	React.useEffect(() => {
 		if (REAL_TIME_DANCED < targetTimeInMillis) return setSessionOn(true);
-		else if (REAL_TIME_DANCED === targetTimeInMillis)
-			return setSessionOn(false);
+		else if (REAL_TIME_DANCED === targetTimeInMillis) {
+			setSessionOn(false);
+			return handleSaveActivity(false, false, chapterOrder, true);
+		}
 	}, [REAL_TIME_DANCED]);
 
 	useAsyncEffect(async () => {
@@ -262,23 +271,49 @@ const DanceScreen = ({ navigation, route }) => {
 	const handleSaveActivity = async (
 		chapterCompleted = false,
 		storyCompleted = false,
-		chapterOrderNumber = chapterOrder
+		chapterOrderNumber = chapterOrder,
+		premature = false
 	) => {
 		const CALORIES_BURNED = calculateCaloriesBurned(sessionCount);
-		console.log(
-			"Figures from Save:",
-			REAL_STEP_COUNT,
-			existingCount,
-			sessionCount,
-			currentChapter.bodyMoves,
-			CALORIES_BURNED,
-			existingTimeDanced,
-			sessionTimeDanced,
-			REAL_TIME_DANCED
-		);
+
+		let ADJUSTED_SESSION_COUNT = sessionCount;
+		let ADJUSTED_TIME_DANCED = sessionTimeDanced;
+
+		if (premature) {
+			const totalCount = sessionCount + existingCount;
+			if (
+				totalCount >= targetBodyMoves * 0.5 &&
+				totalCount < targetBodyMoves * 0.75
+			) {
+				if (existingCount < targetBodyMoves * 0.5) {
+					ADJUSTED_SESSION_COUNT = targetBodyMoves * 0.5 - existingCount;
+					ADJUSTED_TIME_DANCED = targetTimeInMillis * 0.5 - existingTimeDanced;
+				}
+				if (existingCount >= targetBodyMoves * 0.5) {
+					ADJUSTED_SESSION_COUNT = existingCount - targetBodyMoves * 0.5;
+					ADJUSTED_TIME_DANCED = existingTimeDanced - targetTimeInMillis * 0.5;
+				}
+			} else if (
+				totalCount >= targetBodyMoves * 0.75 &&
+				totalCount < targetBodyMoves
+			) {
+				if (existingCount < targetBodyMoves * 0.75) {
+					ADJUSTED_SESSION_COUNT = targetBodyMoves * 0.75 - existingCount;
+					ADJUSTED_TIME_DANCED = targetTimeInMillis * 0.75 - existingTimeDanced;
+				}
+				if (existingCount >= targetBodyMoves * 0.75) {
+					ADJUSTED_SESSION_COUNT = existingCount - targetBodyMoves * 0.75;
+					ADJUSTED_TIME_DANCED = existingTimeDanced - targetTimeInMillis * 0.75;
+				}
+			} else if (totalCount >= 0 && totalCount < targetBodyMoves * 0.5) {
+				ADJUSTED_SESSION_COUNT = sessionCount;
+				ADJUSTED_TIME_DANCED = sessionTimeDanced;
+			}
+		}
+
 		const payload = {
-			bodyMoves: sessionCount,
-			totalTimeDancedInMilliseconds: sessionTimeDanced,
+			bodyMoves: premature ? ADJUSTED_SESSION_COUNT : sessionCount,
+			timeDancedSession: premature ? ADJUSTED_TIME_DANCED : sessionTimeDanced,
 			caloriesBurned: CALORIES_BURNED,
 			contentStoryId: currentChapter.contentStoryId,
 			contentChapterId: currentChapter.contentChapterId,
@@ -299,14 +334,14 @@ const DanceScreen = ({ navigation, route }) => {
 			storeUserPerformanceData({
 				caloriesBurned: payload.caloriesBurned,
 				bodyMoves: payload.bodyMoves,
-				totalTimeDancedInMilliseconds: payload.totalTimeDancedInMilliseconds,
+				totalTimeDancedInMilliseconds: payload.timeDancedSession,
 			})
 		);
 		dispatch(
 			storeUserContentActivityData({
 				caloriesBurned: payload.caloriesBurned,
 				bodyMoves: payload.bodyMoves,
-				totalTimeDancedInMilliseconds: payload.totalTimeDancedInMilliseconds,
+				totalTimeDancedInMilliseconds: payload.timeDancedSession,
 				chapterStarted: payload.chapterStarted,
 				chapterCompleted: payload.chapterCompleted,
 				storyCompleted: payload.storyCompleted,
@@ -316,13 +351,16 @@ const DanceScreen = ({ navigation, route }) => {
 				chapterOrderNumber: payload.chapterOrderNumber,
 			})
 		);
+		dispatch(
+			saveUserMarathonData({
+				userMarathonScoreId: userMarathonScore.id,
+				bodyMoves: payload.bodyMoves,
+			})
+		);
 
 		return;
 	};
 
-	/** End Save User Activity to Store && DB */
-
-	/**Video monitoring functions */
 	const _onPlaybackStatusUpdate = async (status) => {
 		// If status.didJustFinish, do something...
 		setVideoStatus(status);
@@ -350,15 +388,15 @@ const DanceScreen = ({ navigation, route }) => {
 	const handleQuitDance = async () => {
 		await handleUnloadVideo();
 		setShowConfirmModal(false);
-		await handleSaveActivity();
+		await handleSaveActivity(false, false, chapterOrder, true);
 		return navigation.navigate(routes.home.STORY, { contentStoryId });
 	};
 
 	const handleUserResults = async (status) => {
+		await handleUnloadVideo();
+		setDelay(null);
 		switch (status) {
 			case "success":
-				await handleUnloadVideo();
-				setDelay(null);
 				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 					data: {
 						success: true,
@@ -370,8 +408,6 @@ const DanceScreen = ({ navigation, route }) => {
 				});
 				break;
 			case "failed":
-				await handleUnloadVideo();
-				setDelay(null);
 				navigation.navigate(routes.home.PERFORMANCE_RESULTS_SCREEN, {
 					data: {
 						success: false,
@@ -382,8 +418,6 @@ const DanceScreen = ({ navigation, route }) => {
 				});
 				break;
 			case "story_complete":
-				await handleUnloadVideo();
-				setDelay(null);
 				navigation.navigate(routes.home.STORY_FINISHED_SCREEN, {
 					data: {
 						message: currentStory.storySuccessText,

@@ -14,7 +14,7 @@ const HorizontalScroller = styled.ScrollView`
 	width: 100%;
 `;
 
-const MarathonLeagueCard = ({ currentUserRank = 1 }) => {
+const MarathonLeagueCard = ({ visibleRank }) => {
 	return (
 		<Card color={COLORS.darker}>
 			<HorizontalScroller horizontal showsHorizontalScrollIndicator={false}>
@@ -24,20 +24,17 @@ const MarathonLeagueCard = ({ currentUserRank = 1 }) => {
 							key={badge}
 							showLabel={false}
 							size="50"
-							currentUser={ranks[badge].id === currentUserRank}
+							currentUser={ranks[badge].id === visibleRank}
 							rankCode={badge}
 						/>
 					);
 				})}
 			</HorizontalScroller>
-			<Spacer />
-			<Font variant="bold-caps" color={COLORS.white}>
-				{ranks[currentUserRank].name} Trainer League
+			<Spacer h="5px" />
+			<Font variant="bold" color={COLORS.white}>
+				{ranks[visibleRank].name} Trainer League
 			</Font>
-			<Spacer h="10px" />
-			<Font variant="small-caps" color={COLORS.grayDark}>
-				TOP {ranks[currentUserRank].advancers} ADVANCE // 2 DAYS LEFT
-			</Font>
+
 			<Spacer h="20px" />
 			<ThreeStarsElement variant="yellow" />
 		</Card>

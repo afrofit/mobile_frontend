@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useDispatch } from "react-redux";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
@@ -10,7 +11,6 @@ import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
 import TrialStartModal from "../../../components/modals/TrialStartModal";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { ContentContainer } from "../../../components/ContentContainer";
 import { COLORS } from "../../../theme/colors";
@@ -20,18 +20,19 @@ import {
 	getDailyActivity,
 	setContentUpdated,
 } from "../../../store/reducers/activityReducer";
-import {
-	getCurrentUserSubscription,
-	requestCurrentUserSubscription,
-} from "../../../store/reducers/subscriptionReducer";
+import { getCurrentUserSubscription } from "../../../store/reducers/subscriptionReducer";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
 import { storiesFetchAll } from "../../../store/thunks/contentThunks";
 import { getAllStories } from "../../../store/reducers/contentReducer";
-import { createSubscription } from "../../../store/thunks/subscriptionThunks";
+import {
+	createSubscription,
+	requestCurrentUserSubscription,
+} from "../../../store/thunks/subscriptionThunks";
 import { fetchUserDailyActivity } from "../../../store/thunks/activityThunks";
 import useCreateDialog from "../../../hooks/useCreateDialog";
 import ConfirmDialog from "../../../components/modals/ConfirmDialog";
 import Button from "../../../components/buttons/Button";
+import { initializeUserMarathonScore } from "../../../store/thunks/marathonThunks";
 
 const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
@@ -68,6 +69,7 @@ const HomeScreen = ({ navigation }) => {
 		dispatch(fetchUserDailyActivity());
 		dispatch(requestCurrentUserSubscription());
 		dispatch(storiesFetchAll());
+		dispatch(initializeUserMarathonScore());
 	};
 
 	useFocusEffect(

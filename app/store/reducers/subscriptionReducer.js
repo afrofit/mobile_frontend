@@ -41,18 +41,6 @@ const subscriptionSlice = createSlice({
 
 export const { setSubscription, resetSubscription } = subscriptionSlice.actions;
 
-/* *Thunks */
-export function requestCurrentUserSubscription() {
-	return (dispatch) => {
-		fetchCurrentUserSubscription().then((response) => {
-			if (!response) {
-				return dispatch(resetSubscription(response));
-			}
-			return dispatch(setSubscription(response));
-		});
-	};
-}
-
 //Selectors
 export const getCurrentUserSubscription = (state) =>
 	state.subscription.subscription;
