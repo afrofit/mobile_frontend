@@ -86,6 +86,8 @@ const ChapterScreen = ({ navigation, route }) => {
 	const currentStory = useSelector(getCurrentStory);
 	const currentChapter = useSelector(getCurrentStoryChapter);
 
+	//This is the chapter screen
+
 	/** Effects */
 	React.useEffect(() => {
 		// console.log("Done!!!!!", currentChapter);
@@ -124,7 +126,6 @@ const ChapterScreen = ({ navigation, route }) => {
 			contentStoryId,
 		});
 	};
-
 	return (
 		<ScreenContainer backgroundColor={COLORS.dark}>
 			{currentChapter && (
