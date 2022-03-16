@@ -5,10 +5,10 @@ const settings = {
 		apiUrl: "http://192.168.1.102:4040/api",
 	},
 	staging: {
-		apiUrl: "https://afrofit-server-new-rgef3.ondigitalocean.app/api",
+		apiUrl: "https://afrofir-server-x537a.ondigitalocean.app/api",
 	},
 	prod: {
-		apiUrl: "https://afrofit-server-new-rgef3.ondigitalocean.app/api",
+		apiUrl: "https://afrofir-server-x537a.ondigitalocean.app/api",
 	},
 };
 
