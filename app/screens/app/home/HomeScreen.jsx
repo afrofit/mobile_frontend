@@ -82,10 +82,6 @@ const HomeScreen = ({ navigation }) => {
 		}, [])
 	);
 
-	React.useEffect(() => {
-		// console.log("Stories", allStories);
-	}, [dispatch]);
-
 	/** General functions */
 
 	// Might have to do away with this logic fetch subscription from server direct
