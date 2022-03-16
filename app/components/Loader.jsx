@@ -41,7 +41,7 @@ const Loader = ({ message = "Loading Content", visible = true }) => {
 					ref={(animation) => (animationRef = animation)}
 					// autoPlay
 					loop={true}
-					source={require("../assets/animations/music-loader.json")}
+					source={require("../assets/animations/musicloader.json")}
 				/>
 			</LoaderContainer>
 			<Spacer />

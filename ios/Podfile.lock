@@ -54,6 +54,11 @@ PODS:
   - lottie-react-native (5.0.1):
     - lottie-ios (~> 3.2.3)
     - React-Core
+  - Purchases (3.14.1):
+    - PurchasesCoreSwift (= 3.14.1)
+  - PurchasesCoreSwift (3.14.1)
+  - PurchasesHybridCommon (2.0.1):
+    - Purchases (= 3.14.1)
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
     - DoubleConversion
@@ -321,6 +326,9 @@ PODS:
     - React-Core
   - RNGestureHandler (2.1.1):
     - React-Core
+  - RNPurchases (4.5.2):
+    - PurchasesHybridCommon (= 2.0.1)
+    - React-Core
   - RNReanimated (2.3.1):
     - DoubleConversion
     - FBLazyVector
@@ -414,6 +422,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -425,6 +434,9 @@ SPEC REPOS:
   trunk:
     - boost-for-react-native
     - lottie-ios
+    - Purchases
+    - PurchasesCoreSwift
+    - PurchasesHybridCommon
 
 EXTERNAL SOURCES:
   DoubleConversion:
@@ -529,6 +541,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -568,6 +582,9 @@ SPEC CHECKSUMS:
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: a029a86e1689c86a07169c520ae770e84348cd20
+  Purchases: b714751c386c2204d2d5aafaa903fd424a25cd59
+  PurchasesCoreSwift: 2cf98c52dd4b785177539fbfd1c32f60c89eafe7
+  PurchasesHybridCommon: e9bc1677cb11fe584ad29c0309f78142a8f14b5a
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: d34bf57e17cb6e3b2681f4809b13843c021feb6c
   RCTTypeSafety: 8dab4933124ed39bb0c1d88d74d61b1eb950f28f
@@ -596,6 +613,7 @@ SPEC CHECKSUMS:
   ReactCommon: 8fea6422328e2fc093e25c9fac67adbcf0f04fb4
   RNCAsyncStorage: 6bd5a7ba3dde1c3facba418aa273f449bdc5437a
   RNGestureHandler: e1ad51d31a580755079d5124d3ab66f0fcaa8311
+  RNPurchases: fbae56ea06b0d4bf88df691f26d4b8906f918917
   RNReanimated: 7f143675d94978c3555345d5bfa8ed6ae800c5d3
   RNScreens: d6da2b9e29cf523832c2542f47bf1287318b1868
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
