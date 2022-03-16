@@ -18,7 +18,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.afrofit.afrofit"
     },
     "android": {
       "versionCode": 5,
@@ -27,7 +28,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "softwareKeyboardLayoutMode": "pan",
-     "permissions": [
+      "permissions": [
         "READ_EXTERNAL_STORAGE",
         "READ_PHONE_STATE",
         "WAKE_LOCK",
@@ -45,7 +46,8 @@
         "com.sec.android.provider.badge.permission.READ",
         "com.sec.android.provider.badge.permission.WRITE",
         "com.sonyericsson.home.permission.BROADCAST_BADGE"
-      ]
+      ],
+      "package": "com.afrofit.afrofit"
     },
     "web": {
       "favicon": "./app/assets/favicon.png"
