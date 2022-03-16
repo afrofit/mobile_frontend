@@ -21,24 +21,15 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./app/assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "softwareKeyboardLayoutMode": "pan",
      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "CAMERA",
-        "MANAGE_DOCUMENTS",
-        "READ_CONTACTS",
-        "READ_CALENDAR",
-        "WRITE_CALENDAR",
         "READ_EXTERNAL_STORAGE",
         "READ_PHONE_STATE",
-        "RECORD_AUDIO",
-        "USE_FINGERPRINT",
-        "VIBRATE",
         "WAKE_LOCK",
         "WRITE_EXTERNAL_STORAGE",
         "com.anddoes.launcher.permission.UPDATE_COUNT",
