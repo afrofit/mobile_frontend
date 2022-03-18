@@ -1,3 +1,4 @@
+import Purchases from "react-native-purchases";
 import {
 	subscriptionCancel,
 	subscriptionCreate,
@@ -12,6 +13,7 @@ import {
 	finishedRequest,
 	hideGenericErrorDialog,
 	newRequest,
+	setShowSubscribeDialog,
 	showGenericErrorDialog,
 } from "../reducers/uiReducer";
 
@@ -54,7 +56,6 @@ export function requestCurrentUserSubscription() {
 			})
 			.then((response) => {
 				const { data, ok } = response;
-				console.log("Subscription Response", data);
 				if (data && ok) {
 					return dispatch(setSubscription(data));
 				} else if (!ok && data) {
@@ -75,7 +76,29 @@ export function requestCurrentUserSubscription() {
 	};
 }
 
-export function createSubscription(value) {
+export function createSubscription(pack) {
+	return (dispatch) => {
+		dispatch(newRequest());
+		dispatch(hideGenericErrorDialog());
+		Purchases.purchasePackage(pack)
+			.then(({ purchaserInfo }) => {
+				dispatch(finishedRequest());
+				return purchaserInfo;
+			})
+			.then((purchaserInfo) => {
+				if (purchaserInfo.entitlements.active.premium !== "undefined") {
+					// unlock content
+					dispatch(setShowSubscribeDialog(false));
+				}
+			})
+			.catch((error) => {
+				dispatch(showGenericErrorDialog(error.message));
+				console.error(error);
+			});
+	};
+}
+
+export function createSubscriptionOld(value) {
 	return (dispatch) => {
 		dispatch(newRequest());
 		dispatch(hideGenericErrorDialog());

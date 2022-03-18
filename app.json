@@ -22,7 +22,7 @@
       "bundleIdentifier": "com.afrofit.afrofit"
     },
     "android": {
-      "versionCode": 5,
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./app/assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -45,7 +45,8 @@
         "com.majeur.launcher.permission.UPDATE_BADGE",
         "com.sec.android.provider.badge.permission.READ",
         "com.sec.android.provider.badge.permission.WRITE",
-        "com.sonyericsson.home.permission.BROADCAST_BADGE"
+        "com.sonyericsson.home.permission.BROADCAST_BADGE",
+        "com.android.vending.BILLING"
       ],
       "package": "com.afrofit.afrofit"
     },

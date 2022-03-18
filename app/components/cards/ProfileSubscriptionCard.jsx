@@ -4,13 +4,14 @@ import Font from "../../elements/Font";
 import { COLORS } from "../../theme/colors";
 import Spacer from "../../utilities/Spacer";
 import Button from "../buttons/Button";
+import ClearButton from "../buttons/ClearButton";
 import Card from "./Card";
 
 const LabelText = styled.Text`
 	font-family: "Medium";
 	font-size: 12px;
 	letter-spacing: 1px;
-	color: ${(props) => (props.unsubscribed ? COLORS.white : COLORS.grayDark)};
+	color: ${(props) => (props.unsubscribed ? COLORS.white : COLORS.white)};
 	text-transform: lowercase;
 `;
 
@@ -28,41 +29,53 @@ const Container = styled.View`
 `;
 
 const ProfileSubscriptionCard = ({
-	subscription,
 	onTapSubscribe,
 	onCancelSubscription,
+	onRestoreSubscription,
+	info,
 }) => {
-	/**State */
-	// console.log("Subscription from ProfileSubCard: ", subscription);
-	const { endDate, isExpired, name, id } = subscription;
+	React.useState(() => {}, []);
 
 	return (
-		<Card color={isExpired ? COLORS.red : COLORS.darker}>
+		<Card color={!info ? COLORS.red : COLORS.darker}>
 			<Font variant="small-caps" color={COLORS.yellow}>
 				Your Subscription
 			</Font>
 			<Spacer />
 			<Container>
-				{!isExpired && (
+				{info && info.entitlements.active.premium.isActive && (
 					<>
-						<LabelText>Your {name} subscription ends on</LabelText>
+						<LabelText>
+							Your{" "}
+							{info.entitlements.active.premium.ownershipType === "PURCHASED"
+								? "Premium"
+								: "Trial"}{" "}
+							subscription ends on
+						</LabelText>
 						<Spacer h="10px" />
-						<NumberText>{new Date(endDate).toDateString()}</NumberText>
+						<NumberText>
+							{new Date(
+								info.entitlements.active.premium.expirationDate
+							).toDateString()}
+						</NumberText>
 						<Spacer />
 						<Button
 							text="Cancel Subscription"
-							onPress={() => onCancelSubscription(id)}
+							onPress={() => onCancelSubscription()}
 						/>
 					</>
 				)}
 
-				{isExpired && (
+				{!info && (
 					<>
-						<LabelText unsubscribed={isExpired}>
-							You're not subscribed.
-						</LabelText>
+						<LabelText unsubscribed={!info}>You're not subscribed.</LabelText>
 						<Spacer />
 						<Button text="Subscribe Now" onPress={onTapSubscribe} />
+						<Spacer />
+						<ClearButton
+							text="Restore my existing subscription"
+							onPress={() => onRestoreSubscription()}
+						/>
 					</>
 				)}
 			</Container>

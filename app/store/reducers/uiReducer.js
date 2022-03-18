@@ -4,6 +4,7 @@ const initialState = {
 	requestsLoading: 0,
 	showGenericErrorDialog: undefined,
 	videoLoading: false,
+	showSubscribeDialog: false,
 };
 
 const uiSlice = createSlice({
@@ -25,6 +26,9 @@ const uiSlice = createSlice({
 		setVideoLoading(state, { payload }) {
 			state.videoLoading = payload;
 		},
+		setShowSubscribeDialog(state, { payload }) {
+			state.showSubscribeDialog = payload;
+		},
 	},
 });
 
@@ -34,10 +38,13 @@ export const {
 	finishedRequest,
 	showGenericErrorDialog,
 	hideGenericErrorDialog,
+	setShowSubscribeDialog,
 } = uiSlice.actions;
 
 export const selectUiIsLoading = (state) => state.ui.requestsLoading > 0;
 export const selectVideoLoading = (state) => state.ui.videoLoading;
+export const selectShowSubscribeDialog = (state) =>
+	state.ui.showSubscribeDialog;
 
 export const selectShowGenericErrorDialog = (state) =>
 	state.ui.showGenericErrorDialog;

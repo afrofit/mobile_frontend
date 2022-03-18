@@ -20,11 +20,14 @@ PODS:
     - ExpoModulesCore
   - EXImagePicker (12.0.1):
     - ExpoModulesCore
+  - EXJSONUtils (0.2.1)
   - EXKeepAwake (10.0.1):
     - ExpoModulesCore
   - EXLocation (14.0.1):
     - ExpoModulesCore
     - UMTaskManagerInterface
+  - EXManifests (0.2.4):
+    - EXJSONUtils
   - EXNotifications (0.14.0):
     - ExpoModulesCore
   - EXPermissions (13.1.0):
@@ -41,6 +44,14 @@ PODS:
   - EXSplashScreen (0.14.2):
     - ExpoModulesCore
     - React-Core
+  - EXStructuredHeaders (2.1.1)
+  - EXUpdates (0.11.6):
+    - EXManifests
+    - ExpoModulesCore
+    - EXStructuredHeaders
+    - EXUpdatesInterface
+    - React-Core
+  - EXUpdatesInterface (0.5.1)
   - FBLazyVector (0.64.3)
   - FBReactNativeSpec (0.64.3):
     - RCT-Folly (= 2020.01.13.00)
@@ -362,8 +373,6 @@ PODS:
     - React-RCTImage
   - RNSVG (12.1.1):
     - React
-  - RNWalkCounter (1.0.0):
-    - React
   - UMTaskManagerInterface (7.1.0):
     - ExpoModulesCore
   - Yoga (1.14.0)
@@ -379,8 +388,10 @@ DEPENDENCIES:
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
   - EXImagePicker (from `../node_modules/expo-image-picker/ios`)
+  - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
   - EXKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - EXLocation (from `../node_modules/expo-location/ios`)
+  - EXManifests (from `../node_modules/expo-manifests/ios`)
   - EXNotifications (from `../node_modules/expo-notifications/ios`)
   - EXPermissions (from `../node_modules/expo-permissions/ios`)
   - Expo (from `../node_modules/expo/ios`)
@@ -388,6 +399,9 @@ DEPENDENCIES:
   - EXSecureStore (from `../node_modules/expo-secure-store/ios`)
   - EXSensors (from `../node_modules/expo-sensors/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
+  - EXStructuredHeaders (from `../node_modules/expo-structured-headers/ios`)
+  - EXUpdates (from `../node_modules/expo-updates/ios`)
+  - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
@@ -426,7 +440,6 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNWalkCounter (from `../node_modules/react-native-accurate-step-counter/ios`)
   - UMTaskManagerInterface (from `../node_modules/unimodules-task-manager-interface/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -459,10 +472,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-font/ios"
   EXImagePicker:
     :path: "../node_modules/expo-image-picker/ios"
+  EXJSONUtils:
+    :path: "../node_modules/expo-json-utils/ios"
   EXKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   EXLocation:
     :path: "../node_modules/expo-location/ios"
+  EXManifests:
+    :path: "../node_modules/expo-manifests/ios"
   EXNotifications:
     :path: "../node_modules/expo-notifications/ios"
   EXPermissions:
@@ -477,6 +494,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-sensors/ios"
   EXSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
+  EXStructuredHeaders:
+    :path: "../node_modules/expo-structured-headers/ios"
+  EXUpdates:
+    :path: "../node_modules/expo-updates/ios"
+  EXUpdatesInterface:
+    :path: "../node_modules/expo-updates-interface/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
@@ -549,8 +572,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNWalkCounter:
-    :path: "../node_modules/react-native-accurate-step-counter/ios"
   UMTaskManagerInterface:
     :path: "../node_modules/unimodules-task-manager-interface/ios"
   Yoga:
@@ -568,8 +589,10 @@ SPEC CHECKSUMS:
   EXFileSystem: e8013deaa114cab168a6f53be956b9334c3d02cf
   EXFont: 1fb13af43dc517c01c0ff21a6e32f9f9bf2ea602
   EXImagePicker: 91337b8d57a0a8f56800b9ac0f2b2f10aecf88ce
+  EXJSONUtils: 5ee0d5cf76da70ad86f0be1a41cc70f47d69e06f
   EXKeepAwake: b571c2ad8323b2fced6e907766e2549f75119471
   EXLocation: 4bc1ea8086bc296aaba63d16bd194b0995c61cd4
+  EXManifests: d3464cd2278f4a19cd80c1aa673231570b534c11
   EXNotifications: d5b454a2363c8743aa9b2888cc0df70a1d9ee816
   EXPermissions: f4c65fa770489cbf16ea17c3013a670671525014
   Expo: 337c72b7e9314e93023af79c875930db8e008275
@@ -577,6 +600,9 @@ SPEC CHECKSUMS:
   EXSecureStore: fa0fdde1c81ceee2a3cb0519e649feae42767969
   EXSensors: 7cb3fc7b9dd8458787ff8b5b849f318fc357393f
   EXSplashScreen: 21669e598804ee810547dbb6692c8deb5dd8dbf3
+  EXStructuredHeaders: 4993087b2010dbcc510f5d92555b36f523425e8d
+  EXUpdates: bd5fa64f02685ed3e96be86b5ca350cdc2cd8d02
+  EXUpdatesInterface: a9814f422d3cd6e7cfd260d13c27786148ece20e
   FBLazyVector: c71c5917ec0ad2de41d5d06a5855f6d5eda06971
   FBReactNativeSpec: 48402c6ce728665d1230f8d641d41036c4562965
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
@@ -617,7 +643,6 @@ SPEC CHECKSUMS:
   RNReanimated: 7f143675d94978c3555345d5bfa8ed6ae800c5d3
   RNScreens: d6da2b9e29cf523832c2542f47bf1287318b1868
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  RNWalkCounter: c39fffa98dee72a6abc00ffcd3ef5180209a1fb9
   UMTaskManagerInterface: 6f7150f9ec9bc6f2760eeae532a70de71ff951c1
   Yoga: e6ecf3fa25af9d4c87e94ad7d5d292eedef49749
 

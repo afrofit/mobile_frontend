@@ -25,6 +25,7 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { stages, switchStage } from "./store/reducers/resetPasswordReducer";
 import authFuncs from "./store/thunks/auth_functions";
+import Purchases from "react-native-purchases";
 
 const Index = () => {
 	const dispatch = useDispatch();
@@ -44,6 +45,14 @@ const Index = () => {
 		dispatch(switchStage(stages.REQUEST_LINK));
 		dispatch(setVerifySuccess(false));
 
+		try {
+			await Purchases.logIn(currentUser.id);
+
+			await Purchases.logOut();
+		} catch (error) {
+			console.error(error);
+		}
+		console.log(currentUser);
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
 		} else if (!currentUser) {

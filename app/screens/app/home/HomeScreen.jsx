@@ -4,13 +4,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
-import ConfirmModal from "../../../components/modals/ConfirmModal";
 import HomeStatsCard from "../../../components/cards/HomeStatsCard";
 import PageHeaderSmall from "../../../components/headers/PageHeaderSmall";
 import routes from "../../../theme/routes";
 import ScreenContainer from "../../../utilities/ScreenContainer";
 import StoryListSection from "../../../components/sections/home/StoryListSection";
-import TrialStartModal from "../../../components/modals/TrialStartModal";
 
 import { ContentContainer } from "../../../components/ContentContainer";
 import { COLORS } from "../../../theme/colors";
@@ -20,7 +18,6 @@ import {
 	getDailyActivity,
 	setContentUpdated,
 } from "../../../store/reducers/activityReducer";
-import { getCurrentUserSubscription } from "../../../store/reducers/subscriptionReducer";
 import { getCurrentUser } from "../../../store/reducers/userReducer";
 import { storiesFetchAll } from "../../../store/thunks/contentThunks";
 import { getAllStories } from "../../../store/reducers/contentReducer";
@@ -29,10 +26,12 @@ import {
 	requestCurrentUserSubscription,
 } from "../../../store/thunks/subscriptionThunks";
 import { fetchUserDailyActivity } from "../../../store/thunks/activityThunks";
-import useCreateDialog from "../../../hooks/useCreateDialog";
-import ConfirmDialog from "../../../components/modals/ConfirmDialog";
-import Button from "../../../components/buttons/Button";
 import { initializeUserMarathonScore } from "../../../store/thunks/marathonThunks";
+import {
+	selectShowSubscribeDialog,
+	setShowSubscribeDialog,
+} from "../../../store/reducers/uiReducer";
+import Purchases from "react-native-purchases";
 
 const HomeScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
@@ -40,34 +39,20 @@ const HomeScreen = ({ navigation }) => {
 	/** Selectors */
 
 	const currentUser = useSelector(getCurrentUser);
-	const currentSubscription = useSelector(getCurrentUserSubscription);
 	const todaysActivity = useSelector(getDailyActivity);
 	const allStories = useSelector(getAllStories);
 	const contentUpdated = useSelector(getContentUpdated);
+	const showSubscribeDialog = useSelector(selectShowSubscribeDialog);
 
 	/** Fetch relevant data from selectors */
 
-	const { username, hasTrial } = currentUser;
+	const { username } = currentUser;
 	const { caloriesBurned, bodyMoves } = todaysActivity;
-
-	const [showTrialModal, setShowTrialModal] = React.useState(false);
-
-	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
-		React.useState(false);
-
-	const [showConfirmModal, setShowConfirmModal] = React.useState({
-		show: false,
-		message: "",
-		confirmText: "Yes, Subscribe Me",
-		cancelText: "Maybe later",
-		value: "",
-	});
 
 	/** Effects */
 
 	const getData = () => {
 		dispatch(fetchUserDailyActivity());
-		dispatch(requestCurrentUserSubscription());
 		dispatch(storiesFetchAll());
 		dispatch(initializeUserMarathonScore());
 	};
@@ -85,10 +70,18 @@ const HomeScreen = ({ navigation }) => {
 	/** General functions */
 
 	// Might have to do away with this logic fetch subscription from server direct
-	const checkSubscriptionStatus = (contentStoryId) => {
-		if (currentSubscription.isExpired)
-			return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-		return triggerNavigate(contentStoryId);
+	const checkSubscriptionStatus = async (contentStoryId) => {
+		try {
+			const purchaserInfo = await Purchases.getPurchaserInfo();
+			console.log("PurchaseInfo", purchaserInfo);
+			if (typeof purchaserInfo.entitlements.active.premium !== "undefined") {
+				return triggerNavigate(contentStoryId);
+			} else {
+				dispatch(setShowSubscribeDialog(true));
+			}
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
 	/** Navigation logic */
@@ -99,85 +92,20 @@ const HomeScreen = ({ navigation }) => {
 
 	/** Create Subscription Flow */
 
-	const handleCreateSubscription = async (value) => {
-		switch (value) {
-			case "trial":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"Start with a 7-day free trial. If you don't cancel you carry on a monthly subscription.",
-				});
-				break;
-			case "monthly":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"This will subscribe you for £2.99 every monthly, paid yearly",
-				});
-				break;
-			case "half-yearly":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"This will subscribe you for £7.99 for (6) six months. This saves you £15",
-				});
-				break;
-			case "yearly":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"This will subscribe you for £14.99 for twelve (12) months. Saving you £15.",
-				});
-				break;
-			default:
-				return;
-		}
-		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-	};
-
-	const triggerCreateSubscription = async (value) => {
-		dispatch(createSubscription(value));
-		setShowConfirmModal(!showConfirmModal);
-		return setShowChooseSubscriptionModal(false);
+	const triggerCreateSubscription = async (pack) => {
+		dispatch(createSubscription(pack));
+		return dispatch(setShowSubscribeDialog(false));
 	};
 
 	return (
 		<>
-			{showConfirmModal.show && (
-				<ConfirmModal
-					onCancelClicked={() => {
-						setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-						return setShowConfirmModal(!showConfirmModal);
-					}}
-					onConfirmClicked={() =>
-						triggerCreateSubscription(showConfirmModal.value)
-					}
-					confirmText="Yes, Susbcribe me"
-					cancelText="Maybe Later"
-					message={showConfirmModal.message}
-				/>
-			)}
-			{showChooseSubscriptionModal && (
+			{showSubscribeDialog && (
 				<ChooseSubscriptionTypeModal
-					onCancelClicked={() =>
-						setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
-					}
-					handleCreateSubscription={handleCreateSubscription}
+					onCancel={() => dispatch(setShowSubscribeDialog(false))}
+					handleCreateSubscription={triggerCreateSubscription}
 				/>
 			)}
-			{showTrialModal && (
-				<TrialStartModal
-					onCancelClicked={() => setShowTrialModal(!showTrialModal)}
-				/>
-			)}
+
 			<ScreenContainer backgroundColor={COLORS.dark} noTouch={true}>
 				<ContentContainer>
 					<PageHeaderSmall title={`WELCOME ${"   "}//${"   "} ${username}`} />

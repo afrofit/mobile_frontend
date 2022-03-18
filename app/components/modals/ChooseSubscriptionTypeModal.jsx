@@ -15,6 +15,7 @@ import Spacer from "../../utilities/Spacer";
 import subscriptionApi from "../../api/subscription/subscriptionApi";
 import useApi from "../../hooks/useApi";
 import useSubscription from "../../hooks/useSubscription";
+import Purchases from "react-native-purchases";
 
 const Element = styled.Image`
 	width: ${(props) => (props.size ? `${props.size}px` : `60px`)};
@@ -36,11 +37,35 @@ const ModalBG = styled.ImageBackground`
 `;
 
 const ChooseSubscriptionTypeModal = ({
-	onCancelClicked,
+	onCancel,
 	handleCreateSubscription,
 }) => {
+	const [offer, setOffer] = React.useState(null);
+
+	const fetchSubscriptionOfferings = async () => {
+		try {
+			const offerings = await Purchases.getOfferings();
+			if (offerings.current !== null) {
+				//Display current offering with offerings.current
+			}
+			setOffer(offerings.current);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	React.useEffect(() => {
+		fetchSubscriptionOfferings();
+	}, []);
+
 	const handleCancel = () => {
-		onCancelClicked();
+		onCancel();
+	};
+
+	const getPackageTypeString = (type) => {
+		if (type === "MONTHLY") return "monthly";
+		else if (type === "SIX_MONTH") return "half-yearly";
+		else if (type === "ANNUAL") return "yearly";
 	};
 
 	return (
@@ -51,26 +76,22 @@ const ChooseSubscriptionTypeModal = ({
 					size={220}
 					source={require("../../assets/images/art/model_male_01.png")}
 				/>
-				<Button
-					text="£2.99 / MONTHLY"
-					variant="white"
-					onPress={() => handleCreateSubscription("monthly")}
-				/>
-				<Button
-					text="£7.99 / HALF YEARLY"
-					variant="white"
-					onPress={() => handleCreateSubscription("half-yearly")}
-				/>
-				<Button
-					text="£14.99 / YEARLY"
-					variant="white"
-					onPress={() => handleCreateSubscription("yearly")}
-				/>
-				<Button
-					text="TRIAL"
-					variant="red"
-					onPress={() => handleCreateSubscription("trial")}
-				/>
+				<Font variant="paragraph" color={COLORS.grayDark}>
+					Start with a 7-day free trial and continue with any option below
+				</Font>
+				<Spacer />
+				{offer &&
+					offer.availablePackages.map((pack) => {
+						const packageType = getPackageTypeString(pack.packageType);
+						return (
+							<Button
+								key={pack.identifier}
+								text={`${pack.product.price_string} / ${packageType}`}
+								onPress={() => handleCreateSubscription(pack)}
+							/>
+						);
+					})}
+
 				<Spacer h="10px" />
 				<ClearButton
 					text="Maybe Later"

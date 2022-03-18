@@ -8,7 +8,6 @@ import { useDispatch } from "react-redux";
 import authFuncs from "../../../store/thunks/auth_functions";
 import Button from "../../../components/buttons/Button";
 import ChooseSubscriptionTypeModal from "../../../components/modals/ChooseSubscriptionTypeModal";
-import ConfirmModal from "../../../components/modals/ConfirmModal";
 import PageHeaderLarge from "../../../components/headers/PageHeaderLarge";
 import ProfileNameCard from "../../../components/cards/ProfileNameCard";
 import ProfileStatsCard from "../../../components/cards/ProfileStatsCard";
@@ -31,6 +30,12 @@ import { getCurrentUserSubscription } from "../../../store/reducers/subscription
 import { getPerformanceData } from "../../../store/reducers/activityReducer";
 import { useFocusEffect } from "@react-navigation/native";
 import { useSelector } from "react-redux";
+import {
+	selectShowSubscribeDialog,
+	setShowSubscribeDialog,
+} from "../../../store/reducers/uiReducer";
+import Purchases from "react-native-purchases";
+import AlertModal from "../../../components/modals/AlertModal";
 
 const Scroller = styled.ScrollView`
 	max-height: 100%;
@@ -49,9 +54,12 @@ const UserIdText = styled.Text`
 const ProfileScreen = ({}) => {
 	const dispatch = useDispatch();
 
+	const [purchaseInfo, setPurchaseInfo] = React.useState(null);
+
 	const currentUser = useSelector(getCurrentUser);
 	const totalUserStats = useSelector(getPerformanceData);
 	const subscription = useSelector(getCurrentUserSubscription);
+	const showSubscribeDialog = useSelector(selectShowSubscribeDialog);
 
 	const { id: userId, username, email, joinDate, rankId } = currentUser;
 	const {
@@ -62,6 +70,7 @@ const ProfileScreen = ({}) => {
 	} = totalUserStats;
 
 	const [editingUsername, setEditingUsername] = React.useState(false);
+	const [showCancelModal, setShowCancelMSucessModal] = React.useState(false);
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -69,72 +78,44 @@ const ProfileScreen = ({}) => {
 		}, [])
 	);
 
-	const [showChooseSubscriptionModal, setShowChooseSubscriptionModal] =
-		React.useState(false);
+	React.useEffect(() => {
+		getPurchaserInfo();
 
-	const [showConfirmModal, setShowConfirmModal] = React.useState({
-		show: false,
-		message: "",
-		confirmText: "Yes, Subscribe Me",
-		cancelText: "Maybe later",
-		value: "",
-	});
+		Purchases.addPurchaserInfoUpdateListener((info) => getPurchaserInfo());
+	}, []);
+
+	const getPurchaserInfo = async () => {
+		try {
+			const purchaserInfo = await Purchases.getPurchaserInfo();
+
+			if (typeof purchaserInfo.entitlements.active.premium !== "undefined") {
+				setPurchaseInfo(purchaserInfo);
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
 	/** Create Subscription Flow */
 	const { hours } = parseMillis(+totalTimeDancedInMilliseconds);
 
-	const handleCreateSubscription = async (value) => {
-		switch (value) {
-			case "trial":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"Start with a 7-day free trial. If you don't cancel you carry on a monthly subscription.",
-				});
-				break;
-			case "monthly":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"This will subscribe you for £2.99 every monthly, paid yearly",
-				});
-				break;
-			case "half-yearly":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"This will subscribe you for £7.99 for (6) six months. This saves you £15",
-				});
-				break;
-			case "yearly":
-				setShowConfirmModal({
-					...showConfirmModal,
-					show: true,
-					value,
-					message:
-						"This will subscribe you for £14.99 for twelve (12) months. Saving you £15.",
-				});
-				break;
-			default:
-				return;
-		}
-		return setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-	};
-
-	const triggerCreateSubscription = async (value) => {
-		dispatch(createSubscription(value));
-		setShowConfirmModal(!showConfirmModal);
-		return setShowChooseSubscriptionModal(false);
+	const triggerCreateSubscription = async (pack) => {
+		dispatch(createSubscription(pack));
+		return dispatch(setShowSubscribeDialog(false));
 	};
 
 	const handleCancelSubscription = async (subscriptionId) => {
-		dispatch(cancelSubscription(subscriptionId));
+		// dispatch(cancelSubscription(subscriptionId));
+		// cancel subscription here
+	};
+
+	const handleRestoreSubscription = async () => {
+		try {
+			const restore = await Purchases.restoreTransactions();
+			setPurchaseInfo(restore);
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
 	const handleLogout = () => {
@@ -143,26 +124,13 @@ const ProfileScreen = ({}) => {
 
 	return (
 		<>
-			{showConfirmModal.show && (
-				<ConfirmModal
-					onCancelClicked={() => {
-						setShowChooseSubscriptionModal(!showChooseSubscriptionModal);
-						return setShowConfirmModal(!showConfirmModal);
-					}}
-					onConfirmClicked={() =>
-						triggerCreateSubscription(showConfirmModal.value)
-					}
-					confirmText="Yes, Susbcribe me"
-					cancelText="Maybe Later"
-					message={showConfirmModal.message}
-				/>
+			{showCancelModal && (
+				<AlertModal onAnimationDone={() => setShowCancelMSucessModal(false)} />
 			)}
-			{showChooseSubscriptionModal && (
+			{showSubscribeDialog && (
 				<ChooseSubscriptionTypeModal
-					onCancelClicked={() =>
-						setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
-					}
-					handleCreateSubscription={handleCreateSubscription}
+					onCancel={() => dispatch(setShowSubscribeDialog(false))}
+					handleCreateSubscription={triggerCreateSubscription}
 				/>
 			)}
 			{editingUsername && (
@@ -193,10 +161,10 @@ const ProfileScreen = ({}) => {
 						/>
 						<ProfileSubscriptionCard
 							subscription={subscription}
+							info={purchaseInfo}
 							onCancelSubscription={handleCancelSubscription}
-							onTapSubscribe={() =>
-								setShowChooseSubscriptionModal(!showChooseSubscriptionModal)
-							}
+							onRestoreSubscription={handleRestoreSubscription}
+							onTapSubscribe={() => dispatch(setShowSubscribeDialog(true))}
 						/>
 						<Button text="Logout" variant="red" onPress={handleLogout} />
 					</Scroller>
