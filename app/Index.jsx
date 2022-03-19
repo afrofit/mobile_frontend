@@ -46,19 +46,18 @@ const Index = () => {
 		dispatch(setVerifySuccess(false));
 
 		try {
-			await Purchases.logIn(currentUser.id);
-
-			await Purchases.logOut();
+			await Purchases.restoreTransactions();
 		} catch (error) {
 			console.error(error);
 		}
-		console.log(currentUser);
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
+			await Purchases.logIn(currentUser.id);
+			await Purchases.logOut();
 		} else if (!currentUser) {
 			dispatch(unsetCurrentUser());
 		}
-	}, []);
+	}, [dispatch]);
 
 	return (
 		<LoadApp {...{ fonts }}>

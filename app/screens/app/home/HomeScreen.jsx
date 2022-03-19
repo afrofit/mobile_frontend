@@ -57,9 +57,15 @@ const HomeScreen = ({ navigation }) => {
 		dispatch(initializeUserMarathonScore());
 	};
 
+	const restoreSubscription = async () => {
+		const result = await Purchases.restoreTransactions();
+		console.log(result);
+	};
+
 	useFocusEffect(
 		React.useCallback(() => {
 			getData();
+			restoreSubscription();
 
 			return () => {
 				dispatch(setContentUpdated(false));

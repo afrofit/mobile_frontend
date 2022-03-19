@@ -36,6 +36,7 @@ import {
 } from "../../../store/reducers/uiReducer";
 import Purchases from "react-native-purchases";
 import AlertModal from "../../../components/modals/AlertModal";
+import routes from "../../../theme/routes";
 
 const Scroller = styled.ScrollView`
 	max-height: 100%;
@@ -51,7 +52,7 @@ const UserIdText = styled.Text`
 	text-transform: uppercase;
 `;
 
-const ProfileScreen = ({}) => {
+const ProfileScreen = ({ navigation }) => {
 	const dispatch = useDispatch();
 
 	const [purchaseInfo, setPurchaseInfo] = React.useState(null);
@@ -106,9 +107,12 @@ const ProfileScreen = ({}) => {
 
 	const handleCancelSubscription = async (subscriptionId) => {
 		if (Platform.OS === "ios") {
+			navigation.navigate(routes.home.WEBVIEW, {
+				URL: purchaseInfo.managementUrl,
+			});
 		} else if (Platform.OS === "android") {
+			// dispatch(cancelSubscription(subscriptionId));
 		}
-		// dispatch(cancelSubscription(subscriptionId));
 		// cancel subscription here
 	};
 
