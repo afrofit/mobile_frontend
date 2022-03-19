@@ -2,7 +2,7 @@ import * as React from "react";
 import parseMillis from "parse-ms";
 import styled from "styled-components/native";
 
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { useDispatch } from "react-redux";
 
 import authFuncs from "../../../store/thunks/auth_functions";
@@ -105,6 +105,9 @@ const ProfileScreen = ({}) => {
 	};
 
 	const handleCancelSubscription = async (subscriptionId) => {
+		if (Platform.OS === "ios") {
+		} else if (Platform.OS === "android") {
+		}
 		// dispatch(cancelSubscription(subscriptionId));
 		// cancel subscription here
 	};
