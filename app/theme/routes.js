@@ -27,6 +27,5 @@ export default Object.freeze({
 		DANCE: "Dance",
 		PERFORMANCE_RESULTS_SCREEN: "PerformanceResultsScreen",
 		STORY_FINISHED_SCREEN: "StoryFinishedScreen",
-		WEBVIEW: "WebView",
 	},
 });

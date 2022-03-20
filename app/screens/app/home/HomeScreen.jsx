@@ -58,8 +58,12 @@ const HomeScreen = ({ navigation }) => {
 	};
 
 	const restoreSubscription = async () => {
-		const result = await Purchases.restoreTransactions();
-		console.log(result);
+		await Purchases.restoreTransactions();
+		currentUser && (await Purchases.logIn(currentUser.id));
+	};
+
+	const revenueCatLogout = async () => {
+		await Purchases.logOut();
 	};
 
 	useFocusEffect(
@@ -69,6 +73,7 @@ const HomeScreen = ({ navigation }) => {
 
 			return () => {
 				dispatch(setContentUpdated(false));
+				// revenueCatLogout();
 			};
 		}, [])
 	);

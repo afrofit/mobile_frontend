@@ -22,7 +22,7 @@
       "bundleIdentifier": "com.afrofit.afrofit"
     },
     "android": {
-      "versionCode": 13,
+      "versionCode": 17,
       "adaptiveIcon": {
         "foregroundImage": "./app/assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -33,8 +33,6 @@
         "READ_PHONE_STATE",
         "WAKE_LOCK",
         "WRITE_EXTERNAL_STORAGE",
-        "com.anddoes.launcher.permission.UPDATE_COUNT",
-        "com.android.launcher.permission.INSTALL_SHORTCUT",
         "com.google.android.c2dm.permission.RECEIVE",
         "ACTIVITY_RECOGNITION",
         "android.permission.ACTIVITY_RECOGNITION",
@@ -47,7 +45,7 @@
         "com.sec.android.provider.badge.permission.WRITE",
         "com.sonyericsson.home.permission.BROADCAST_BADGE",
         "com.android.vending.BILLING",
-        "android.vending.BILLING"
+        "android.permission.INTERNET"
       ],
       "package": "com.afrofit.afrofit"
     },

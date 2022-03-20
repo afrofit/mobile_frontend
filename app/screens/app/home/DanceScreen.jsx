@@ -127,6 +127,55 @@ const DanceScreen = ({ navigation, route }) => {
 
 	const [sessionOn, setSessionOn] = React.useState(true);
 
+	const [sessionStage, setSessionStage] = React.useState(null);
+
+	React.useEffect(() => {
+		console.log("Session Stage:", sessionStage);
+	}, [sessionStage]);
+
+	React.useEffect(() => {
+		if (REAL_STEP_COUNT > 45 && REAL_STEP_COUNT < 100) {
+			return setSessionStage("done_50");
+		}
+		if (REAL_STEP_COUNT >= 100 && REAL_STEP_COUNT < 200) {
+			return setSessionStage("done_100");
+		}
+		if (REAL_STEP_COUNT >= 200 && REAL_STEP_COUNT < 300) {
+			setSessionStage("done_200");
+		}
+		if (
+			REAL_STEP_COUNT >= targetBodyMoves - 200 &&
+			REAL_STEP_COUNT < targetBodyMoves - 100
+		) {
+			setSessionStage("togo_200");
+		}
+		if (
+			REAL_STEP_COUNT >= targetBodyMoves - 100 &&
+			REAL_STEP_COUNT < targetBodyMoves - 50
+		) {
+			setSessionStage("togo_100");
+		}
+		if (
+			REAL_STEP_COUNT >= targetBodyMoves - 50 &&
+			REAL_STEP_COUNT < targetBodyMoves - 30
+		) {
+			setSessionStage("togo_50");
+		}
+
+		if (targetBodyMoves > 1200 && targetBodyMoves < 2500) {
+			if (REAL_STEP_COUNT > 500 && REAL_STEP_COUNT < 600) {
+				setSessionStage("done_500");
+			}
+			if (REAL_STEP_COUNT > 1000 && REAL_STEP_COUNT < 1100) {
+				setSessionStage("done_1000");
+			}
+
+			if (REAL_STEP_COUNT > 2000 && REAL_STEP_COUNT < 2100) {
+				setSessionStage("done_2000");
+			}
+		}
+	});
+
 	const videoRef = React.useRef(null);
 
 	const { handleUnloadVideo, handlePlayVideoPlayback } = useVideo(
@@ -219,47 +268,34 @@ const DanceScreen = ({ navigation, route }) => {
 	}, [REAL_STEP_COUNT, sessionOn]);
 
 	useAsyncEffect(async () => {
-		if (REAL_STEP_COUNT === 50) {
+		if (sessionStage === "done_50") {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_50);
 		}
-		if (REAL_STEP_COUNT === 100) {
+		if (sessionStage === "done_100") {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_100);
 		}
-		if (REAL_STEP_COUNT === 200) {
+		if (sessionStage === "done_200") {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_200);
 		}
-		if (REAL_STEP_COUNT === targetBodyMoves - 200) {
+		if (sessionStage === "done_500") {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_500);
+		}
+		if (sessionStage === "done_1000") {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
+		}
+		if (sessionStage === "done_2000") {
+			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_2000);
+		}
+		if (sessionStage === "togo_200") {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_200);
 		}
-		if (REAL_STEP_COUNT === targetBodyMoves - 100) {
+		if (sessionStage === "togo_100") {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_100);
 		}
-		if (REAL_STEP_COUNT === targetBodyMoves - 50) {
+		if (sessionStage === "togo_50") {
 			await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.TOGO_50);
 		}
-
-		if (targetBodyMoves > 1200 && targetBodyMoves < 1500) {
-			if (REAL_STEP_COUNT === 500) {
-				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_200);
-			}
-		}
-		if (targetBodyMoves > 1501 && targetBodyMoves < 2300) {
-			if (REAL_STEP_COUNT === 500) {
-				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_500);
-			}
-			if (REAL_STEP_COUNT === 1000) {
-				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
-			}
-		}
-		if (targetBodyMoves > 2301 && targetBodyMoves < 2500) {
-			if (REAL_STEP_COUNT === 1000) {
-				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_1000);
-			}
-			if (REAL_STEP_COUNT === 2000) {
-				await handleAnnouncement(ANNOUNCEMENT_TYPE_DATA.DONE_2000);
-			}
-		}
-	}, [REAL_STEP_COUNT]);
+	}, [sessionStage]);
 
 	React.useEffect(() => {
 		startMoving();
@@ -455,6 +491,7 @@ const DanceScreen = ({ navigation, route }) => {
 						<StatusContainer>
 							<InstructionTextWhite>Your body movements</InstructionTextWhite>
 							{/* <NumberText>{calculateActualSteps(existingCount)}</NumberText> */}
+							<NumberText>{bodyMovementCount}</NumberText>
 							<NumberText>{REAL_STEP_COUNT}</NumberText>
 						</StatusContainer>
 						<Spacer />

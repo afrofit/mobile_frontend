@@ -23,10 +23,10 @@ import { hideGenericErrorDialog } from "../../store/reducers/uiReducer";
 import { getSignupSuccess } from "../../store/reducers/userReducer";
 
 const initialValues = {
-	username: "olasupoodebiyi",
-	email: "olasupoodebiyi@yahoo.com",
-	password: "olasupoo",
-	agreements: true,
+	username: "",
+	email: "",
+	password: "",
+	agreements: false,
 };
 
 const validationSchema = Yup.object().shape({

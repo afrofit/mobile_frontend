@@ -18,7 +18,6 @@ import DanceScreen from "../screens/app/home/DanceScreen";
 import StoryIntroScreen from "../screens/app/home/StoryIntroScreen";
 import PerformanceResultScreen from "../screens/app/home/PerformanceResultScreen";
 import FinishStoryScreen from "../screens/app/home/FinishStoryScreen";
-import WebViewScreen from "../screens/app/WebViewScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -102,10 +101,6 @@ const AppNavigator = () => {
 			<Stack.Screen
 				name={routes.home.STORY_FINISHED_SCREEN}
 				component={FinishStoryScreen}
-			></Stack.Screen>
-			<Stack.Screen
-				name={routes.home.WEBVIEW}
-				component={WebViewScreen}
 			></Stack.Screen>
 		</Stack.Navigator>
 	);

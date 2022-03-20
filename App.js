@@ -22,7 +22,6 @@ export default function App() {
 		} else if (Platform.OS === "android") {
 			Purchases.setup(ANDROID_REVCAT_KEY);
 		}
-		// restoreSubscription();
 	}, []);
 
 	return (

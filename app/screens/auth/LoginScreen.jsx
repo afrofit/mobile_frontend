@@ -20,8 +20,8 @@ import { useDispatch } from "react-redux";
 import { hideGenericErrorDialog } from "../../store/reducers/uiReducer";
 
 const initialValues = {
-	email: "olasupoodebiyi@yahoo.com",
-	password: "olasupoo",
+	email: "",
+	password: "",
 };
 
 const validationSchema = Yup.object().shape({

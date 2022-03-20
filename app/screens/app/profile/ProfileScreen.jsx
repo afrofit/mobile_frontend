@@ -107,11 +107,19 @@ const ProfileScreen = ({ navigation }) => {
 
 	const handleCancelSubscription = async (subscriptionId) => {
 		if (Platform.OS === "ios") {
-			navigation.navigate(routes.home.WEBVIEW, {
-				URL: purchaseInfo.managementUrl,
-			});
+			//navigate to subscription settings page
 		} else if (Platform.OS === "android") {
-			// dispatch(cancelSubscription(subscriptionId));
+			console.log("Canceling...");
+			console.log(
+				currentUser.id,
+				purchaseInfo.entitlements.active.productIdentifier
+			);
+			dispatch(
+				cancelAndroidSubscription(
+					currentUser.id,
+					purchaseInfo.entitlements.active.productIdentifier
+				)
+			);
 		}
 		// cancel subscription here
 	};

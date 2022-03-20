@@ -52,8 +52,6 @@ const Index = () => {
 		}
 		if (currentUser) {
 			dispatch(setCurrentUser(currentUser));
-			await Purchases.logIn(currentUser.id);
-			await Purchases.logOut();
 		} else if (!currentUser) {
 			dispatch(unsetCurrentUser());
 		}
