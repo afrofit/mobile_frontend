@@ -22,7 +22,7 @@
       "bundleIdentifier": "com.afrofit.afrofit"
     },
     "android": {
-      "versionCode": 17,
+      "versionCode": 18,
       "adaptiveIcon": {
         "foregroundImage": "./app/assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

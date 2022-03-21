@@ -129,6 +129,10 @@ const DanceScreen = ({ navigation, route }) => {
 
 	const [sessionStage, setSessionStage] = React.useState(null);
 
+	// const REAL_STEP_COUNT = calculateActualSteps(existingCount);
+	const REAL_STEP_COUNT = existingCount + sessionCount;
+	const REAL_TIME_DANCED = existingTimeDanced + sessionTimeDanced;
+
 	React.useEffect(() => {
 		console.log("Session Stage:", sessionStage);
 	}, [sessionStage]);
@@ -197,10 +201,6 @@ const DanceScreen = ({ navigation, route }) => {
 		useBodyMovements();
 
 	const { handleAnnouncement } = useAudioAnnouncer();
-
-	// const REAL_STEP_COUNT = calculateActualSteps(existingCount);
-	const REAL_STEP_COUNT = existingCount + sessionCount;
-	const REAL_TIME_DANCED = existingTimeDanced + sessionTimeDanced;
 
 	const {
 		hours: targetHours,

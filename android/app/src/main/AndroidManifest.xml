@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.afrofit.afrofit">
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -13,6 +15,7 @@
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
   <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
+  <uses-permission android:name="com.android.vending.BILLING"/>
   <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
   <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
   <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
